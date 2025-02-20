@@ -269,6 +269,12 @@ neuron$cell.type[num2] <- 'Neuron2'
 DimPlot(neuron,group.by = 'cell.type',label = F,cols = c("#A6CEE3","#1F78B4","#e7c23e","#802268FF", "#6BD76BFF","#FF4500"))
 
 # heatmap 
+mt.lab <- as.data.frame(t(as.matrix(GetAssayData(neuron, assay = "RNA", slot = "scale.data"))))
+group.by <- 'cell.type'
+mt.lab <- aggregate(mt.lab, by=list(neuron@meta.data[[group.by]]), FUN="mean")
+rownames(mt.lab) <- mt.lab$Group.1
+mt.lab <- t(mt.lab[,-1])
+
 cts <- as.matrix(mt.lab[rev(c('GBX2','SOX3','NKX6-1','HOXA4','HOXA5','ERBB3','SOX10','TBX3')),])
 ggRow = data.frame(module = c(rep('Vagus nerve',3),rep('HOX gene',2),rep('Intestinal nerve',3)))
 rownames(ggRow) =c('GBX2','SOX3','NKX6-1','HOXA4','HOXA5','ERBB3','SOX10','TBX3')

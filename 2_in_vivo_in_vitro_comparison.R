@@ -62,16 +62,18 @@ integrated$lab1[1:13372] <- integrated$Major_cell_type[1:13372]
 integrated$lab1[1:13372] <- paste('lite',integrated$lab1[1:13372],sep = '_')
 integrated$lite <- 'in vitro'
 integrated$lite[1:13372] <- 'in vivo'
+integrated$day[1:13372] <- 'in vivo'
 
-mt.lab <- as.data.frame(t(as.matrix(GetAssayData(integrated, assay = "integrated", slot = "data"))))
+d16 <- integrated[, integrated$day %in% c("D16",'In vivo')] 
+mt.lab <- as.data.frame(t(as.matrix(GetAssayData(d16, assay = "integrated", slot = "data"))))
 group.by <- 'lab1'
-mt.lab <- aggregate(mt.lab, by=list(integrated@meta.data[[group.by]]), FUN="mean")
+mt.lab <- aggregate(mt.lab, by=list(d16@meta.data[[group.by]]), FUN="mean")
 rownames(mt.lab) <- mt.lab$Group.1
 mt.lab <- t(mt.lab[,-1])
-mt.lab <- as.data.frame(mt.lab[,-c(1,4,6,9,10,18)]) 
+mt.lab <- as.data.frame(mt.lab[,-c(1,2,3,11,12,17,18)]) 
 cor <- cor(mt.lab,method = "spearman")
 # Figure3
-pheatmap(cor,display_numbers=F,cluster_cols=T,cluster_rows=T,clustering_method = 'average') #
+pheatmap(cor,display_numbers=F,cluster_cols=T,cluster_rows=T,clustering_method = 'average') 
 
 vitro <- integrated[, integrated$lite %in% "in vitro"] 
 vivo <- integrated[, Idents(integrated) %in% "in vivo"] 
