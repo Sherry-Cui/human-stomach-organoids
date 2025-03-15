@@ -381,7 +381,6 @@ de.gland <- d16
 count <- de.gland@assays$RNA@counts
 meta <- de.gland@meta.data
 object <- createURD(count.data=count, meta=meta, min.cells = 20, min.counts=20)
-object <- createURD(count.data=count, meta=meta, min.cells = 0, min.counts=0,min.genes = 0,gene.max.cut = 15000,max.genes.in.ram = 15000)
 rm(list=c("count", "meta"))
 shhhh <- gc()
 stages <- unique(object@meta$cell.type)
@@ -422,7 +421,7 @@ pdata <- pData(cds_sub)
 identical(colnames(d16),rownames(pdata))
 d16$Pseudotime <- pdata$Pseudotime
 d16@meta.data <- d16@meta.data %>% arrange(Pseudotime)
-mat <- d16@assays$RNA@data[ecm,rownames(d16@meta.data)]
+mat <- d16@assays$RNA@data[,rownames(d16@meta.data)]
 mat <- t(apply(mat,1,function(x){smooth.spline(x,df=3)$y}))
 mat <- t(apply(mat,1,function(x){(x-mean(x))/sd(x)}))
 meta <- d16@meta.data[,c("cell.type",'day')]
