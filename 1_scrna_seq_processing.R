@@ -8,29 +8,29 @@ library(stringr)
 library(ggsci)
 library(ComplexHeatmap)
 
-load(file = "D4.O.S1.1.filter.rdata") #10925
-load(file = "D4.O.S1.2.filter.rdata") #10723
-load(file = "D4.O.S2.1.filter.rdata") #18813
-load(file = "D4.O.S2.2.filter.rdata") #16460
+load(file = "D4.O.S1.1.filter.rdata") 
+load(file = "D4.O.S1.2.filter.rdata") 
+load(file = "D4.O.S2.1.filter.rdata") 
+load(file = "D4.O.S2.2.filter.rdata") 
 
-load(file = "D7.O.S1.1.filter.rdata") #10488
-load(file = "D7.O.S1.2.filter.rdata") #9154
-load(file = "D7.O.S2.1.filter.rdata") #11206
-load(file = "D7.O.S2.2.filter.rdata") #10398
+load(file = "D7.O.S1.1.filter.rdata") 
+load(file = "D7.O.S1.2.filter.rdata") 
+load(file = "D7.O.S2.1.filter.rdata") 
+load(file = "D7.O.S2.2.filter.rdata") 
 
 
-load(file = "D10.O.S1.1.filter.rdata") #5480
-load(file = "D10.O.S2.1.filter.rdata") #4545
-load(file = "D10.O.S2.2.filter.rdata") #5154
+load(file = "D10.O.S1.1.filter.rdata") 
+load(file = "D10.O.S2.1.filter.rdata") 
+load(file = "D10.O.S2.2.filter.rdata") 
 
-load(file = "D13.O.S1.1.filter.rdata") #12053
-load(file = "D13.O.S1.2.filter.rdata") #11975
-load(file = "D13.O.S2.1.filter.rdata") #13230
-load(file = "D13.O.S2.2.filter.rdata") #11605
+load(file = "D13.O.S1.1.filter.rdata") 
+load(file = "D13.O.S1.2.filter.rdata") 
+load(file = "D13.O.S2.1.filter.rdata") 
+load(file = "D13.O.S2.2.filter.rdata") 
 
-load(file = 'PDMS_1.filter.rdata') #10926
-load(file = 'PDMS_2.filter.rdata') #12935
-load(file = 'dish.filter.rdata') #8484
+load(file = 'PDMS_1.filter.rdata') 
+load(file = 'PDMS_2.filter.rdata') 
+load(file = 'dish.filter.rdata') 
 
 
 sample.list <- list(D4.O.S1.1.f,D4.O.S1.2.f,D4.O.S2.1.f,D4.O.S2.2.f,
@@ -40,13 +40,9 @@ for (i in 1:length(sample.list)){
   sample.list[[i]] <- NormalizeData(sample.list[[i]], verbose = FALSE)
   sample.list[[i]] <- FindVariableFeatures(sample.list[[i]], selection.method = "vst", nfeatures = 2000, verbose = FALSE)
 }
-sample.list <- lapply(X = sample.list, FUN = function(x) {
-  x <- ScaleData(x,verbose = FALSE)
-  x <- RunPCA(x,verbose = FALSE)
-})
 
 sample.anchors <- FindIntegrationAnchors(object.list = sample.list,k.filter=200, anchor.features = 2000, verbose = F)
-sample.integrated <- IntegrateData(anchorset = sample.anchors, verbose = F) #266396
+sample.integrated <- IntegrateData(anchorset = sample.anchors, verbose = F) 
 
 DefaultAssay(sample.integrated) <- "integrated"
 sample.integrated <- ScaleData(sample.integrated, verbose = F)
@@ -80,6 +76,7 @@ ggplot(Cellratio) +
   theme(panel.border = element_rect(fill=NA,color="black", size=0.5, linetype="solid"))
 
 ######## Figure3 marker genes dotplot
+DefaultAssay(sample.integrated) <- "RNA"
 gene <- c('POU5F1','NANOG', #hPSC
           'SOX17','GSC',#DE
           'CLDN4','CLDN18','GATA4','CDH1',#Epithelium
@@ -132,17 +129,6 @@ counts$cell.type <- ordered(counts$cell.type,levels=c('Precursor','Fundus1','Fun
 col <- c('#e7c23e',"#A6CEE3","#1F78B4","#FB9A99","#E95C59","#6A3D9A","#33A02C" )
 DimPlot(counts,group.by = 'cell.type',cols =col)
 
-Cellratio <- prop.table(table(counts$cell.type, counts$day), margin = 2)
-Cellratio <- as.data.frame(Cellratio)
-Cellratio$cell_type <- Cellratio$Var1
-Cellratio$day <- Cellratio$Var2
-ggplot(Cellratio) + 
-  geom_bar(aes(x =day, y= Freq, fill = cell_type),stat = "identity",width = 0.7,size = 0.5,colour = '#222222')+ 
-  theme_classic() +
-  labs(x='Day',y = 'Cell type')+
-  scale_fill_manual(values = col)+
-  theme(panel.border = element_rect(fill=NA,color="black", size=0.5, linetype="solid"))
-
 # Extended Data Figure9 featureplot 
 FeaturePlot(counts,features = c('PDX1','SOX2'),cols = c('lightgrey','red'),split.by = 'day',label = F)
 
@@ -164,13 +150,11 @@ cts <- as.matrix(mt[unique(markers$gene),])
 bk <- c(seq(-1,0,by=0.005),seq(0.001,0.4,by=0.001))
 # Extended Data Figure9
 ComplexHeatmap::pheatmap(cts,show_colnames =T,show_rownames = F,breaks = bk,legend_breaks=seq(-1,0.4,0.2),
-                         color =colorRampPalette(rev(brewer.pal(n = 35, name ="RdBu")))(length(bk)), 
+                         color =colorRampPalette(rev(brewer.pal(n = 35, name ="RdYlBu")))(length(bk)), 
                          cluster_rows = F,
                          cluster_cols = F,
                          name= 'Scaled Expression')
 
-save(counts,file = "epi.RData")
-save(epiremovedgland,file = "epiremovedgland.RData")
 
 ######## Partial Epi and Epithelium DEG heatmap -------------------
 subset <- sample.integrated[, sample.integrated$cell.type %in% c('Partial Epi','Epithelium')]
@@ -189,10 +173,10 @@ rownames(mt) <- mt$Group.1
 mt <- t(mt[,-1])
 cts <- as.matrix(mt[unique(markers$gene),])
 cts <- na.omit(cts)
-bk <- c(seq(-0.5,0,by=0.01),seq(0.001,0.2,by=0.005))
+bk <- c(seq(-0.5,0,by=0.01),seq(0.005,0.2,by=0.005))
 # Supplementary Figure4
 ComplexHeatmap::pheatmap(cts,show_colnames =T,show_rownames = F,breaks = bk,legend_breaks=seq(-0.5,0.2,0.1),
-                         color =colorRampPalette(rev(brewer.pal(n = 35, name ="RdBu")))(length(bk)), 
+                         color =colorRampPalette(rev(brewer.pal(n = 11, name ="RdYlBu")))(length(bk)), 
                          cluster_rows = F,
                          cluster_cols = F,
                          name= 'Scaled Expression')
@@ -230,10 +214,10 @@ rownames(mt) <- mt$Group.1
 mt <- t(mt[,-1])
 cts <- as.matrix(mt[unique(marker$gene),])
 cts <- na.omit(cts)
-bk <- c(seq(-1,0,by=0.01),seq(0.01,0.8,by=0.01))
+bk <- c(seq(-0.6,0,by=0.01),seq(0.01,0.5,by=0.01))
 # Supplementary Figure5
-ComplexHeatmap::pheatmap(cts,show_colnames =T,show_rownames = F,breaks = bk,legend_breaks=seq(-1,1,0.5),
-                         color =colorRampPalette(rev(brewer.pal(n = 35, name ="RdBu")))(length(bk)), 
+ComplexHeatmap::pheatmap(cts,show_colnames =T,show_rownames = F,breaks = bk,legend_breaks=seq(-1,0.5,0.5),
+                         color =colorRampPalette(rev(brewer.pal(n = 35, name ="RdYlBu")))(length(bk)), 
                          cluster_rows = F,
                          cluster_cols = F,
                          name= 'Scaled Expression')
@@ -276,17 +260,12 @@ rownames(mt.lab) <- mt.lab$Group.1
 mt.lab <- t(mt.lab[,-1])
 
 cts <- as.matrix(mt.lab[rev(c('GBX2','SOX3','NKX6-1','HOXA4','HOXA5','ERBB3','SOX10','TBX3')),])
-ggRow = data.frame(module = c(rep('Vagus nerve',3),rep('HOX gene',2),rep('Intestinal nerve',3)))
-rownames(ggRow) =c('GBX2','SOX3','NKX6-1','HOXA4','HOXA5','ERBB3','SOX10','TBX3')
-bk <- c(seq(-1,1,by=0.1),seq(2,2,by=0.1))
-tmpCol = c('#E63863',"#53A85F","#F1BB72")
-ggRow$module <- ordered(ggRow$module,levels=c("Intestinal nerve","HOX gene","Vagus nerve"))
-names(tmpCol) = levels(as.factor(ggRow$module))
+bk <- c(seq(-1,1,by=0.1),seq(1,2,by=0.1))
+
 # Extended Data Figure6
 pheatmap(cts, cluster_cols = F,cluster_rows = F,breaks = bk,legend_breaks=seq(-1,2,1),
-         color = colorRampPalette(rev(brewer.pal(n = 35, name ="RdBu")))(length(bk)),
-         annotation_row = ggRow,cutree_rows = 3,annotation_colors = list(module = tmpCol))
-
+         color = colorRampPalette(rev(brewer.pal(n = 11, name ="RdYlBu")))(length(bk))
+)
 
 
 

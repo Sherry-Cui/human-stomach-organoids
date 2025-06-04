@@ -202,32 +202,26 @@ ggplot(data,aes(x=cell.type,y=cyto_pseudotime))+
 saveRDS(sce,file = 'epi.rds')
 
 
+# Extended Data Figure7
+load("NEURON.RData")
+
+expr <- data.frame(neuron@assays$RNA$counts)
+pheno <- neuron$cell.type
+embbing <- data.frame(neuron@reductions$umap@cell.embeddings)
+
+results = CytoTRACE(expr, ncores = 8, subsamplesize = 1000)
+plotCytoTRACE(
+  cyto_obj = results, 
+  phenotype = marrow_10x_pheno, 
+  emb = embbing 
+)
+
+
 ############# Pseudotime and pseudospace of epithelial cells 
 library(monocle)
 library(URD)
 library(clusterProfiler)
 library(org.Hs.eg.db)
-
-###### monocle2 ---------------------------------------------------------------
-load(file = 'epi.RData')
-DefaultAssay(counts) <- 'RNA'
-data <- as(as.matrix(counts@assays$RNA@counts), 'sparseMatrix')
-pd <- new('AnnotatedDataFrame', data = counts@meta.data)
-fData <- data.frame(gene_short_name = row.names(data), row.names = row.names(data))
-fd <- new('AnnotatedDataFrame', data = fData)
-mycds <- newCellDataSet(data,
-                        phenoData = pd,
-                        featureData = fd,
-                        expressionFamily = negbinomial.size())
-mycds <- estimateSizeFactors(mycds)
-mycds <- estimateDispersions(mycds, cores=4, relative_expr = TRUE)
-disp_table <- dispersionTable(mycds)
-unsup_clustering_genes <- subset(disp_table, mean_expression >= 0.1)
-mycds <- setOrderingFilter(mycds, unsup_clustering_genes$gene_id)
-plot_ordering_genes(mycds)
-mycds <- reduceDimension(mycds, max_components = 2, method = 'DDRTree')
-mycds <- orderCells(mycds)
-
 
 #  supp_figure9 Epithelium DPT
 library(reticulate)
@@ -431,19 +425,13 @@ type_col <- setNames(c("#A6CEE3","#1F78B4","#FB9A99","#E95C59","#6A3D9A"),
 col_anno <- HeatmapAnnotation(Cell_type=meta$cell.type,col=list(Cell_type = type_col))
 
 # Extended Data Figure9 HOX gene heatmap
-hox <- c('HOXA1',"HOXC5",'HOXB6',"HOXA2","HOXB3","HOXB4","HOXB2","HOXB7") 
-matrix <- mat[hox,]
-Heatmap(
-  matrix,
-  name                         = "Smoothed expression",
-  km = 0,
-  col                          = colorRampPalette(rev(brewer.pal(n = 7, name ="RdYlBu")))(100),
-  show_row_names               = T,
-  show_column_names            = FALSE,
-  cluster_rows                 = F,
-  cluster_row_slices           = FALSE,
-  cluster_columns              = FALSE,
-  top_annotation = col_anno) 
+gene <- rownames(cds_sub)[grep("^HOX", rownames(cds_sub))] 
+pseudotime_de <- differentialGeneTest(cds_sub[gene,], fullModelFormulaStr = "~sm.ns(Pseudotime)") 
+pseudotime_de <- subset(pseudotime_de, qval < 0.05) 
+gene <- pseudotime_de$gene_short_name
+
+plot_pseudotime_heatmap(cds_sub[gene,],return_heatmap=T, 
+                        hmcols = colorRampPalette(rev(brewer.pal(n = 7, name ="RdYlBu")))(100),show_rownames = T,cluster_rows = F)
 
 # Extended Data Figure9 ECM gene heatmap
 highlight <- read_excel('ECM_gene.xlsx') 
@@ -467,7 +455,24 @@ Heatmap(
   top_annotation = col_anno) 
 
 # Extended Data Figure9 TF heatmap
-tf.plot <- read.table(file = 'plotgene.txt')
+load(file = 'epi.RData')
+d16 <- counts[, counts$day %in% 'D16'] 
+d16 <- d16[, d16$lab %in% c('Antral Epi','Fundic Epi')] 
+d16$lab <- ordered(d16$lab,levels = c('Antral Epi','Fundic Epi')) 
+
+loom <- open_loom('out_SCENIC.loom')
+regulons_incidMat <- get_regulons(loom, column.attr.name="Regulons")   
+regulons <- regulonsToGeneLists(regulons_incidMat) 
+tf <- str_split(names(regulons),'[(]',simplify = T)[,1] 
+
+DefaultAssay(d16) <- 'RNA'
+markers <- FindAllMarkers(d16, only.pos = TRUE, min.pct = 0.25, logfc.threshold = 0.25)
+tf.plot <- intersect(tf,unique(markers$gene))
+
+pseudotime_de <- differentialGeneTest(cds_sub[tf.plot,], fullModelFormulaStr = "~sm.ns(Pseudotime)") 
+pseudotime_de <- subset(pseudotime_de, qval < 0.05) 
+tf.plot <- pseudotime_de$gene_short_name
+
 matrix <- mat[tf.plot,]
 Heatmap(
   matrix,

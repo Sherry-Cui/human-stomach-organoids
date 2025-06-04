@@ -15,7 +15,7 @@ load(file = 'integrated.RData')
 
 rownames(count) <- symbol$V1 
 colnames(count) <- index$V1
-all <- CreateSeuratObject(count,meta.data = info) #28691 155232
+all <- CreateSeuratObject(count,meta.data = info) 
 all <- all %>%
   NormalizeData(verbose = FALSE) %>% 
   FindVariableFeatures(selection.method = "vst", nfeatures = 2000) %>% 
@@ -47,63 +47,159 @@ DotPlot(all.sample_d16_epi,features = gene,cols = c('lightgrey','red'),group.by 
 
 # in vivo/in vitro UMAP and correlation heatmap
 set.seed(20230518)
-sample <- subset(sample.integrated,downsample=2000) #23068
-list <- list(stomach,sample)
-for (i in 1:length(list)){
-  list[[i]] <- NormalizeData(list[[i]], verbose = FALSE)
-  list[[i]] <- FindVariableFeatures(list[[i]], selection.method = "vst", nfeatures = 2000, verbose = T)
-}
-anchors <- FindIntegrationAnchors(object.list = list,k.filter=200, anchor.features = 2000)
-integrated <- IntegrateData(anchorset = anchors)
-integrated <- ScaleData(integrated, verbose = T)
-integrated <- RunPCA(integrated,verbose = T)
-integrated <- RunUMAP(integrated, reduction = "pca", dims = 1:20)
-integrated$lab1[1:13372] <- integrated$Major_cell_type[1:13372]
-integrated$lab1[1:13372] <- paste('lite',integrated$lab1[1:13372],sep = '_')
-integrated$lite <- 'in vitro'
-integrated$lite[1:13372] <- 'in vivo'
-integrated$day[1:13372] <- 'in vivo'
 
-d16 <- integrated[, integrated$day %in% c("D16",'In vivo')] 
-mt.lab <- as.data.frame(t(as.matrix(GetAssayData(d16, assay = "integrated", slot = "data"))))
-group.by <- 'lab1'
-mt.lab <- aggregate(mt.lab, by=list(d16@meta.data[[group.by]]), FUN="mean")
-rownames(mt.lab) <- mt.lab$Group.1
-mt.lab <- t(mt.lab[,-1])
-mt.lab <- as.data.frame(mt.lab[,-c(1,2,3,11,12,17,18)]) 
-cor <- cor(mt.lab,method = "spearman")
+da1 <- data.frame(colnames(sample.integrated),sample.integrated$lab2)
+da2 <- data.frame(unique(sample.integrated$lab2),c('DE','hPSC','Partial Epi','NE','Unidentified','Endothelial',      
+                                                   'Gastirc Epi','Gastirc Epi','Mesenchymal','Neuron' ,'Mesenchymal','Premigratory ENNC',
+                                                   'Enteroendocrine','Mesenchymal','NPC','Gastirc Epi','Migratory ENNC'))
+colnames(da2) <- c('sample.integrated.lab2','celltype')
+result <- join(da1,da2)
+sample.integrated$Major_cell_type <- result$celltype
+Idents(sample.integrated) <- 'Major_cell_type'
+sample<-subset(sample.integrated,downsample=2000)#23068
+vivo$celltype <- paste0('lite_ ',vivo$Major_cell_type)
+
+vivo$sample <- vivo$orig.ident
+vivo$day <- 'Vivo'
+da1 <- data.frame(colnames(sample),sample$day)
+da2 <- data.frame(unique(sample$day),c('D4','D7','Other','Other','Other'))
+colnames(da2) <- c('sample.day','day')
+result <- join(da1,da2)
+sample$sample <- result$day
+
+alldata.list <- SplitObject(all_sample.combined, split.by = "sample")
+alldata.list <- lapply(X = alldata.list, FUN = function(x) {
+  DefaultAssay(x)="RNA"  
+  x <- NormalizeData(x)
+  x <- FindVariableFeatures(x, selection.method = "vst",
+                            nfeatures = 2000)
+})
+
+all_sample.anchors <- FindIntegrationAnchors(object.list = alldata.list , dims = 1:20)
+all_sample.combined <- IntegrateData(anchorset = all_sample.anchors, dims = 1:20)
+
+DefaultAssay(all_sample.combined) <- "integrated"
+all_sample.combined <- ScaleData(all_sample.combined,verbose = T)
+all_sample.combined <- RunPCA(all_sample.combined, npcs = 30, verbose = T)
+ElbowPlot(all_sample.combined)
+all_sample.combined <- RunUMAP(all_sample.combined, seed.use = -1, reduction = "pca", dims = 1:20,return.model = TRUE)
+all_sample.combined <- FindNeighbors(all_sample.combined, reduction = "pca", dims = 1:20)
+
+d <- data.frame(table(all_sample.combined$orig.ident))
+all_sample.combined <- FindClusters(all_sample.combined,  resolution = c(2))
+P <- DimPlot(all_sample.combined, reduction = "umap", group.by = "integrated_snn_res.2",label = T,repel = T,raster=FALSE)
+
+all_sample.combined$Major_cell_type[num] <- paste0('Fetal_stomach_',vivo$Major_cell_type)
+cols <- c('#ffff00','#1ce6ff','#ff34ff','#ff4a46','#008941','#006fa6','#a30059',
+          '#ffdbe5','#7a4900','#0000a6','#63ffac','#b79762',"#ff4a46","#008941","#ffdbe5","#0000a6","#eec3ff","#456d75")
+all_sample.combined$Major_cell_type<- factor(all_sample.combined$Major_cell_type,levels = c("hPSC","DE","Partial Epi","Gastirc Epi","Mesenchymal","NE",'NPC',
+                                                                                            'Neuron','ENCC','Endothelial','Enteroendocrine','Unidentified',
+                                                                                            'Fetal_stomach_Epithelial','Fetal_stomach_Mesenchymal','Fetal_stomach_Neuronal',
+                                                                                            "Fetal_stomach_Endothelial",'Fetal_stomach_Erythroid',"Fetal_stomach_Immune"))
+all_sample.combined$day<- factor(all_sample.combined$day,levels = c("D4","D7","D10","D13","D16","Vivo"))
+
+# Extended Figure 6 
+DimPlot(all_sample.combined, group.by = "Major_cell_type",split.by = 'day',label = F,repel = T,raster=FALSE,cols = cols)+
+  facet_wrap(~ day, nrow = 2)
+
+data <- subset(all_sample.combined,day=='Vivo'|day=='D16')
+num <- na.omit(match(colnames(vivo),colnames(data)))
+data$Major_cell_type[num] <- paste0('Fetal_stomach_',vivo$Major_cell_type)
+data <- subset(data,Major_cell_type!='Enteroendocrine'&Major_cell_type!="Partial Epi"&Major_cell_type!="hPSC"&Major_cell_type!="DE"&Major_cell_type!="Erythroid"&Major_cell_type!="Immune"&Major_cell_type!="Unidentified"&Major_cell_type!="Fetal_stomach_Erythroid"&Major_cell_type!="Fetal_stomach_Immune")
+
+DEG <- FindAllMarkers(vivo,group.by = 'Major_cell_type')
+DEG <- dplyr::filter(DEG,DEG$p_val_adj<0.05&DEG$avg_log2FC>0)
+
+alldata.list <- SplitObject(data, split.by = "orig.ident")
+alldata.list <- lapply(X = alldata.list, FUN = function(x) {
+  DefaultAssay(x)="RNA"  
+  x <- NormalizeData(x)
+  x <- FindVariableFeatures(x, selection.method = "vst",
+                            nfeatures = 2000)
+})
+
+all_sample.anchors <- FindIntegrationAnchors(object.list = alldata.list , dims = 1:20,anchor.features = 5000)
+all_sample.combined <- IntegrateData(anchorset = all_sample.anchors,features = unique(DEG$gene))
+
+DefaultAssay(all_sample.combined) <- 'integrated'
+all_sample.combined <- FindVariableFeatures(all_sample.combined,nfeatures = 10000)
+all_sample.combined <- ScaleData(all_sample.combined)
+aver <- AverageExpression(all_sample.combined,group.by = 'Major_cell_type',slot = 'scale.data')
+exp <- data.frame(aver$integrated)
+
+num=names(tail(sort(apply(exp, 1, sd)),10000))
+num <- match(num,rownames(exp))
+exp <- exp[num,]
+exp <- data.frame(exp)
+exp <- cor(exp, method= "spearman")
+
+exprTable_t <- as.data.frame(t(exp))
+col_dist = dist(exprTable_t)
+hclust_1 <- hclust(col_dist)
+manual_order = c("Fetal.stomach.Mesenchymal",'Mesenchymal','Fetal.stomach.Epithelial','Gastirc.Epi','Fetal.stomach.Endothelial','Endothelial',
+                 'Fetal.stomach.Neuronal','Neuron','ENCC','NPC','NE')
+dend = reorder(as.dendrogram(hclust_1), wts=order(match(manual_order, rownames(exprTable_t))), agglo.FUN = max)
+col_cluster <- as.hclust(dend)
+bk <- c(seq(0,0.2,by=0.05),seq(0.21,0.3,by=0.03),seq(0.31,0.4,by=0.03),seq(0.41,0.64,by=0.23),seq(0.64,0.82,by=0.18),seq(0.82,0.98,by=0.16),seq(0.98,1,by=0.02))###0.02(有颜色)或者0.03(白)
 # Figure3
-pheatmap(cor,display_numbers=F,cluster_cols=T,cluster_rows=T,clustering_method = 'average') 
+pheatmap(exp,cluster_cols = col_cluster,cluster_rows = col_cluster,display_numbers = F,fontsize = 20,angle_col = '315') 
 
-vitro <- integrated[, integrated$lite %in% "in vitro"] 
-vivo <- integrated[, Idents(integrated) %in% "in vivo"] 
-cols <- c("#ff4a46","#008941","#ffdbe5","#0000a6","#eec3ff","#456d75")
-d16 <- vitro[, vitro$day %in% "D16"] 
+# D16+vivo integrated
+data <- subset(all_sample.combined,day=='Vivo'|day=='D16')
+num <- na.omit(match(colnames(vivo),colnames(data)))
+
+data$Sample[num] <- 'vivo'
+data$Sample[-num] <- 'vitro'
+
+S32 <- subset(data,orig.ident=='S32')
+num2 <- match(colnames(S32),colnames(data))
+data$Sample[num2] <- 'S32'
+
+alldata.list <- SplitObject(data, split.by = "Sample")
+alldata.list <- lapply(X = alldata.list, FUN = function(x) {
+  DefaultAssay(x)="RNA"  
+  x <- NormalizeData(x)
+  x <- FindVariableFeatures(x, selection.method = "vst",
+                            nfeatures = 2000)
+})
+
+all_sample.anchors <- FindIntegrationAnchors(object.list = alldata.list , dims = 1:20)
+all_sample.combined <- IntegrateData(anchorset = all_sample.anchors, dims = 1:20)
+
+DefaultAssay(all_sample.combined) <- 'integrated'
+all_sample.combined <- ScaleData(all_sample.combined)
+all_sample.combined <- RunPCA(all_sample.combined, npcs = 20, verbose = T)
+ElbowPlot(all_sample.combined)
+all_sample.combined <- RunUMAP(all_sample.combined, seed.use = -1, reduction = "pca", dims = 1:20,return.model = TRUE)
+all_sample.combined <- FindNeighbors(all_sample.combined, reduction = "pca", dims = 1:20)
+
+num <- match(colnames(vivo),colnames(all_sample.combined))
+all_sample.combined$sample[num] <- 'vivo'
+all_sample.combined$sample[-num] <- 'vitro'
+
+cols <- c('#ffff00','#1ce6ff','#ff34ff','#ff4a46','#008941','#006fa6','#a30059',
+          '#ffdbe5','#7a4900','#0000a6','#63ffac','#b79762',"#ff4a46","#008941","#ffdbe5","#0000a6","#eec3ff","#456d75")
+all_sample.combined$Major_cell_type<- factor(all_sample.combined$Major_cell_type,levels = c("hPSC","DE","Partial Epi","Gastirc Epi","Mesenchymal","NE",'NPC',
+                                                                                            'Neuron','ENCC','Endothelial','Enteroendocrine','Unidentified',
+                                                                                            'Fetal_stomach_Epithelial','Fetal_stomach_Mesenchymal','Fetal_stomach_Neuronal',
+                                                                                            "Fetal_stomach_Endothelial",'Fetal_stomach_Erythroid',"Fetal_stomach_Immune"))
 # Figure3
-p1 <- DimPlot(d16, group.by = "lab1", pt.size=0.1,label = T,reduction = 'umap')+
-  xlim(-13, 10) + ggtitle("In vitro(D16)") + scale_color_manual(values = col)
-p2 <- DimPlot(vivo, group.by = "lab1", pt.size=0.1,label = T) + ggtitle("In vivo") + scale_color_manual(values = cols)
-p1|p2
+DimPlot(all_sample.combined, reduction = "umap", group.by = 'Major_cell_type',split.by = 'sample',label = T,repel = T,raster=FALSE,pt.size = 1.5,cols = cols)
 
-# Extended Data Figure5 UMAP
-integrated$day <- ordered(integrated$day,levels=c('D4','D7','D10','D13','D16','In vivo'))
-DimPlot(integrated, group.by = "lab1",split.by = 'day', pt.size=0.1,label = F,ncol = 3) + ggtitle("Day") + scale_color_manual(values = col)
+DefaultAssay(all_sample.combined) <- 'RNA'
+unique(all_sample.combined$sample)
+vivo <- subset(all_sample.combined,Sample=='vivo')
+vitro <-  subset(all_sample.combined,Sample=='vitro')
 
-# Figure3 FeaturePlot
-DefaultAssay(d16) <- 'RNA'
-DefaultAssay(vivo) <- 'RNA'
-p1 <- FeaturePlot(d16,features = c('CDH1','COL1A2','MAP2','FLT1'),cols = c('lightgrey','red'),ncol = 1,label = F)
-p1 <- FeaturePlot(d16,features = 'CDH1',cols = c('lightgrey','red'),ncol = 1,label = F)+ xlim(-13, 10)
-p2 <- FeaturePlot(d16,features = 'COL1A2',cols = c('lightgrey','red'),ncol = 1,label = F)+ xlim(-13, 10)
-p3 <- FeaturePlot(d16,features = 'MAP2',cols = c('lightgrey','red'),ncol = 1,label = F)+ xlim(-13, 10)
-p4 <- FeaturePlot(d16,features = 'FLT1',cols = c('lightgrey','red'),ncol = 1,label = F)+ xlim(-13, 10)
-p <- p1/p2/p3/p4
-p5 <- FeaturePlot(vivo,features = c('CDH1','COL1A2','MAP2','FLT1'),cols = c('lightgrey','red'),ncol = 1,label = F)
-p5 <- FeaturePlot(vivo,features = 'CDH1',cols = c('lightgrey','red'),ncol = 1,label = F)+ xlim(-13, 10)
-p6 <- FeaturePlot(vivo,features = 'COL1A2',cols = c('lightgrey','red'),ncol = 1,label = F)+ xlim(-13, 10)
-p7 <- FeaturePlot(vivo,features = 'MAP2',cols = c('lightgrey','red'),ncol = 1,label = F)+ xlim(-13, 10)
-p8 <- FeaturePlot(vivo,features = 'FLT1',cols = c('lightgrey','red'),ncol = 1,label = F)+ xlim(-13, 10)
-p|(p5/p6/p7/p8)
+# Extended Figure 6 
+FeaturePlot(vivo,features = c('CDH1'),cols = c('lightgrey','red'),pt.size = 1)
+FeaturePlot(vitro,features = c('CDH1'),cols = c('lightgrey','red'),pt.size = 1)
+FeaturePlot(vivo,features = c('COL1A2'),cols = c('lightgrey','red'),pt.size = 1)
+FeaturePlot(vitro,features = c('COL1A2'),cols = c('lightgrey','red'),pt.size = 1)
+FeaturePlot(vivo,features = c('FLT1'),cols = c('lightgrey','red'),pt.size = 1)
+FeaturePlot(vitro,features = c('FLT1'),cols = c('lightgrey','red'),pt.size = 1)
+FeaturePlot(vivo,features = c('MAP2'),cols = c('lightgrey','red'),pt.size = 0.1)
+FeaturePlot(vitro,features = c('MAP2'),cols = c('lightgrey','red'),pt.size = 0.5)
 
 
 #### In vivo and In vitro epithelium 
@@ -229,35 +325,35 @@ DimPlot(all_sample.combined,split.by  = 'cell.type',label = T)
 
 all_sample.combined$subtype <- ordered(all_sample.combined$subtype,
                                        levels=c('Precursor','Fundic Epi','Antral Epi','Gland','Fetal_stomach_precursor','Fetal_stomach_fundus','Fetal_stomach_antrum','Fetal_stomach_gland'))
-Cols <- c('#E95C59', '#E4C755', '#58A4C3', '#23452F','#E95C59', '#E4C755', '#58A4C3' ,'#23452F')
-names(Cols) <- levels(all_sample.combined$subtype)
 # Figure4
-DimPlot(all_sample.combined,group.by = 'subtype',cols = Cols,label = F,split.by = 'split')
+vitro <- subset(all_sample.combined,split=='in vitro')
+p1 <- DimPlot(vitro,group.by = 'celltype',cols = c('#E95C59', '#E4C755', '#58A4C3', '#23452F'),pt.size = 1)+ scale_x_reverse()
+
+vivo <- subset(all_sample.combined,split=='In vivo')
+p2 <- DimPlot(vivo,group.by = 'celltype',cols = c('#E95C59', '#E4C755', '#58A4C3', '#23452F'),pt.size = 2.5)+ scale_x_reverse()
+p1+p2
 
 # spearman correlation
-Idents(all_sample.combined)<- all_sample.combined$subtype
+Idents(all_sample.combined) <- 'celltype'
 exp<- AverageExpression(all_sample.combined)
-data <- exp$integrated
-num <- names(tail(sort(apply(data, 1, sd)),1000))
-num <- match(num,rownames(data))
-data <- data[num,]
-data <- data.frame(data)
+data <- data.frame(exp$integrated)
+numeric_cols <- sapply(data, is.numeric)
+data[numeric_cols] <- lapply(data[numeric_cols], function(x) ifelse(is.na(x), 0, x))
+
+num=names(tail(sort(apply(data, 1, sd)),88))  
+num <- na.omit(match(num,rownames(data)))
 data <- cor(data, method= "spearman")
+spearman_dist_matrix <- as.dist(1 - data)
 
-for (i in 1:8) {
-  for (j in 1:8) {
-    data[i,j] <- (data[i,j]-0.5443106)/(1-0.5443106)
-  }  
-}
-colnames(data) <- c("Antral Epi","Precursor","Fundic Epi","Gland","Fetal_stomach_gland","Fetal_stomach_fundus","Fetal_stomach_antrum","Fetal_stomach_precursor")
-rownames(data) <- c("Antral Epi","Precursor","Fundic Epi","Gland","Fetal_stomach_gland","Fetal_stomach_fundus","Fetal_stomach_antrum","Fetal_stomach_precursor")
-bk <- c(seq(0,0.49,by=0.01),seq(0.5,1,by=0.01))
-# Supplementary Figure6
-pheatmap(data,display_numbers = F,color = colorRampPalette(c("#053061","#2166AC","#4393C3","#92C5DE","#D1E5F0","#F7F7F7","#FDDBC7","#F4A582","#D6604D","#B2182B","#67001F"))(100),
-         legend_breaks=c(0,1),
-         breaks=bk,
-         legend_labels = c('low','high'),angle_col = '315',fontsize = 12)
-
+hc <- hclust(spearman_dist_matrix)
+bk<-c(seq(0.6,0.9,by=0.03),seq(0.91,0.934,by=0.001),seq(0.935,0.96,by=0.01),seq(0.961,0.98,by=0.001),seq(0.981,1,by=0.01))
+# Supplementary Figure5
+pheatmap(data, 
+         display_numbers = F,
+         cluster_rows = hc,
+         cluster_cols = hc,angle_col = '315',
+         legend_breaks=c(0.6,1),
+         breaks=bk,color = colorRampPalette(rev(brewer.pal(n = 7, name ="RdYlBu")))(60))
 
 
 ###### In vitro and in vivo expression of ECM and secreting protein genes in Epi lineage 
@@ -538,13 +634,14 @@ for (i in 1:5) {
     data[i,j] <- (data[i,j]-0.8961564)/(1-0.8961564)
   }  
 }
-rev(brewer.pal(n = 11, name ="RdBu"))
-bk <- c(seq(0,0.2,by=0.03),seq(0.21,0.3,by=0.03),seq(0.31,0.4,by=0.03),seq(0.41,0.5,by=0.03),seq(0.51,0.72,by=0.03),seq(0.73,0.74,by=0.03),seq(0.75,0.76,by=0.005),seq(0.77,0.78,by=0.005),seq(0.79,0.8,by=0.03),seq(0.81,0.90,by=0.03),seq(0.91,1,by=0.03))
+
+bk <- c(seq(0,0.2,by=0.03),seq(0.21,0.3,by=0.03),seq(0.31,0.4,by=0.03),seq(0.41,0.5,by=0.03),seq(0.51,0.72,by=0.03),seq(0.73,0.74,by=0.03),seq(0.75,0.76,by=0.005),seq(0.77,0.78,by=0.005),seq(0.79,0.8,by=0.03),seq(0.81,0.90,by=0.03),seq(0.91,1,by=0.03))###0.02(鏈夐鑹?)鎴栬�?0.03(鐧?)
 # Extended Data Figure6
-pheatmap(data,display_numbers = F,color = colorRampPalette(c("#053061","#2166AC","#4393C3","#92C5DE","#D1E5F0","#F7F7F7","#FDDBC7","#F4A582","#D6604D","#B2182B","#67001F"))(43),
-              legend_breaks=c(0,0.999),
-              breaks=bk,
-              legend_labels = c('low','high'),fontsize = 20,angle_col = 315)
+pheatmap(data, 
+         display_numbers = F,
+         cluster_rows = T,
+         cluster_cols = T,angle_col = '315',
+         breaks=bk,color = colorRampPalette(rev(brewer.pal(n = 7, name ="RdYlBu")))(42))
 
 
 
