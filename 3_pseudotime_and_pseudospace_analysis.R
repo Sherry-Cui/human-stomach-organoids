@@ -111,8 +111,6 @@ pheatmap(cts_neuron,show_colnames =T,show_rownames = T,color = viridis(8),
 sample <- subset(sce,downsample=2000)
 data <- sample[,sample$day %in% c('D4','D7','D10','D13','D16')]@meta.data[,c('cell.type','day','cyto_pseudotime')]
 
-data <- sce[,sce$day %in% c('D4','D7','D10','D13','D16')]@meta.data[,c('cell.type','day','cyto_pseudotime')]
-
 ggplot(data,aes(x=cell.type,y=cyto_pseudotime))+
   geom_violin(width =0.8,fill='grey90',color='grey90')+
   geom_quasirandom(aes(color=day),width = 0.2,size=0.2)+ 
@@ -176,7 +174,6 @@ pheatmap(cts_epi,show_colnames =T,show_rownames = T,color = viridis(8),
 sample <- subset(sce,downsample=2000)
 data <- sample[,sample$day %in% c('D4','D7','D10','D13','D16')]@meta.data[,c('cell.type','day','cyto_pseudotime')]
 
-data <- sce[,sce$day %in% c('D4','D7','D10','D13','D16')]@meta.data[,c('cell.type','day','cyto_pseudotime')]
 ggplot(data,aes(x=cell.type,y=cyto_pseudotime))+
   geom_violin(width =0.8,fill='grey90',color='grey90')+
   geom_quasirandom(aes(color=day),width = 0.2,size=0.2)+ 
