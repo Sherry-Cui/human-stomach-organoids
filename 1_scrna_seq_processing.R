@@ -134,6 +134,8 @@ FeaturePlot(counts,features = c('PDX1','SOX2'),cols = c('lightgrey','red'),split
 
 # DEG heatmap
 epiremovedgland <- counts[, counts$cell.type %in% c("Fundus1","Fundus2","Antrum1","Antrum2","Antrum3")] 
+
+DefaultAssay(epiremovedgland) <- 'RNA'
 markers <- FindAllMarkers(epiremovedgland, only.pos = TRUE, min.pct = 0.25, logfc.threshold = 0.25)
 markers <- filter(markers,p_val_adj < 0.05)
 markers %>%
@@ -201,6 +203,7 @@ mesen$cell.type <- mesen$integrated_snn_res.0.1
 mesen$cell.type <- plyr::mapvalues(x=mesen$cell.type, from=c("0","2","1"), 
                                    to=c("Mesenchymal1","Mesenchymal2","Mesenchymal3"))
 ### DEG heatmap
+DefaultAssay(mesen) <- 'RNA'
 marker <- FindAllMarkers(mesen, only.pos = TRUE, min.pct = 0.25, logfc.threshold = 0.25)
 marker <- filter(marker,p_val_adj < 0.05)
 marker %>%

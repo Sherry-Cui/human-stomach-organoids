@@ -39,31 +39,15 @@ head(cellchat@LR$LRsig)
 cellchat <- netAnalysis_computeCentrality(cellchat, slot.name = "netP")
 
 # Supplementary Figure7
-netVisual_aggregate(cellchat, signaling = 'MK',  vertex.receiver = vertex.receiver,pt.title=20,vertex.label.cex = 1.7,arrow.width=0.8,arrow.size = 0.5)
-netVisual_aggregate(cellchat, signaling = 'PTN',  vertex.receiver = vertex.receiver,pt.title=20,vertex.label.cex = 1.7,arrow.width=0.8,arrow.size = 0.5)
-netVisual_aggregate(cellchat, signaling = 'MIF',  vertex.receiver = vertex.receiver,pt.title=20,vertex.label.cex = 1.7,arrow.width=0.8,arrow.size = 0.5)
-netVisual_aggregate(cellchat, signaling = 'ncWNT',  vertex.receiver = vertex.receiver,pt.title=20,vertex.label.cex = 1.7,arrow.width=0.8,arrow.size = 0.5)
-netVisual_aggregate(cellchat, signaling = 'GDF',  vertex.receiver = vertex.receiver,pt.title=20,vertex.label.cex = 1.7,arrow.width=0.8,arrow.size = 0.5)
-netVisual_aggregate(cellchat, signaling = 'IGF',  vertex.receiver = vertex.receiver,pt.title=20,vertex.label.cex = 1.7,arrow.width=0.8,arrow.size = 0.5)
-netVisual_aggregate(cellchat, signaling = 'PARs',  vertex.receiver = vertex.receiver,pt.title=20,vertex.label.cex = 1.7,arrow.width=0.8,arrow.size = 0.5)
-netVisual_aggregate(cellchat, signaling = 'SPP1',  vertex.receiver = vertex.receiver,pt.title=20,vertex.label.cex = 1.7,arrow.width=0.8,arrow.size = 0.5)
-netVisual_aggregate(cellchat, signaling = 'SEMA3',  vertex.receiver = vertex.receiver,pt.title=20,vertex.label.cex = 1.7,arrow.width=0.8,arrow.size = 0.5)
-
-netVisual_aggregate(cellchat, signaling = 'FGF',  vertex.receiver = vertex.receiver,pt.title=20,vertex.label.cex = 1.7,arrow.width=0.8,arrow.size = 0.5)
-netVisual_aggregate(cellchat, signaling = 'BMP',  vertex.receiver = vertex.receiver,pt.title=20,vertex.label.cex = 1.7,arrow.width=0.8,arrow.size = 0.5)
 netVisual_aggregate(cellchat, signaling = 'WNT', vertex.receiver = vertex.receiver, pt.title=20,vertex.label.cex = 1.7,arrow.width=0.8,arrow.size = 0.5)
-netVisual_aggregate(cellchat, signaling = 'GRN',  vertex.receiver = vertex.receiver,pt.title=20,vertex.label.cex = 1.7,arrow.width=0.8,arrow.size = 0.5)
-netVisual_aggregate(cellchat, signaling = 'SPP1',  vertex.receiver = vertex.receiver,pt.title=20,vertex.label.cex = 1.7,arrow.width=0.8,arrow.size = 0.5)
+netVisual_aggregate(cellchat, signaling = 'ncWNT',  vertex.receiver = vertex.receiver,pt.title=20,vertex.label.cex = 1.7,arrow.width=0.8,arrow.size = 0.5)
 netVisual_aggregate(cellchat, signaling = 'CXCL',  vertex.receiver = vertex.receiver,pt.title=20,vertex.label.cex = 1.7,arrow.width=0.8,arrow.size = 0.5)
-netVisual_aggregate(cellchat, signaling = 'GAS',  vertex.receiver = vertex.receiver,pt.title=20,vertex.label.cex = 1.7,arrow.width=0.8,arrow.size = 0.5)
+netVisual_aggregate(cellchat, signaling = 'FGF',  vertex.receiver = vertex.receiver,pt.title=20,vertex.label.cex = 1.7,arrow.width=0.8,arrow.size = 0.5)
 netVisual_aggregate(cellchat, signaling = 'PDGF',  vertex.receiver = vertex.receiver,pt.title=20,vertex.label.cex = 1.7,arrow.width=0.8,arrow.size = 0.5)
-netVisual_aggregate(cellchat, signaling = 'VISFATIN',  vertex.receiver = vertex.receiver,pt.title=20,vertex.label.cex = 1.7,arrow.width=0.8,arrow.size = 0.5)
+netVisual_aggregate(cellchat, signaling = 'BMP',  vertex.receiver = vertex.receiver,pt.title=20,vertex.label.cex = 1.7,arrow.width=0.8,arrow.size = 0.5)
+netVisual_aggregate(cellchat, signaling = 'IGF',  vertex.receiver = vertex.receiver,pt.title=20,vertex.label.cex = 1.7,arrow.width=0.8,arrow.size = 0.5)
+netVisual_aggregate(cellchat, signaling = 'GAS',  vertex.receiver = vertex.receiver,pt.title=20,vertex.label.cex = 1.7,arrow.width=0.8,arrow.size = 0.5)
 
-netVisual_aggregate(cellchat, signaling = 'KIT',  vertex.receiver = vertex.receiver,pt.title=20,vertex.label.cex = 1.7,arrow.width=0.8,arrow.size = 0.5)
-netVisual_aggregate(cellchat, signaling = 'NPR2',  vertex.receiver = vertex.receiver,pt.title=20,vertex.label.cex = 1.7,arrow.width=0.8,arrow.size = 0.5)
-netVisual_aggregate(cellchat, signaling = 'NT',  vertex.receiver = vertex.receiver,pt.title=20,vertex.label.cex = 1.7,arrow.width=0.8,arrow.size = 0.5)
-netVisual_aggregate(cellchat, signaling = 'ENHO',  vertex.receiver = vertex.receiver,pt.title=20,vertex.label.cex = 1.7,arrow.width=0.8,arrow.size = 0.5)
-netVisual_aggregate(cellchat, signaling = 'PROS',  vertex.receiver = vertex.receiver,pt.title=20,vertex.label.cex = 1.7,arrow.width=0.8,arrow.size = 0.5)
 
 netVisual_bubble(cellchat, remove.isolate = FALSE, signaling = c("PDGF",'BMP'), 
                  sources.use = c('Precursor','Antral Epi',"Fundic Epi"),targets.use =c('Mesenchymal','NE','NPC','Neuron','ENCC'))
@@ -75,19 +59,20 @@ netAnalysis_signalingRole_network(cellchat, signaling = 'ncWNT', width = 10, hei
 plotGeneExpression(cellchat, signaling = c('PDGF','BMP'))
 plotGeneExpression(cellchat, signaling = 'WNT')
 
-# Extended Data Figure10
+# Supplementary Figure6
 ht1 <- netAnalysis_signalingRole_heatmap(cellchat, pattern = "outgoing", color.heatmap = "GnBu", width = 7, height = 8)
 ht2 <- netAnalysis_signalingRole_heatmap(cellchat, pattern = "incoming", color.heatmap = "GnBu", width = 7, height = 8)
 draw(ht1 + ht2, ht_gap = unit(0.5, "cm"))
 netVisual_bubble(cellchat, remove.isolate = FALSE, signaling = 'WNT', 
                  sources.use = c('NE','NPC'),
                  targets.use =c('Precursor','Antral Epi',"Fundic Epi",'Mesenchymal','NE','NPC','Neuron','ENCC'))+coord_flip()
-
-# Figure5
 groupSize <- as.numeric(table(cellchat@idents))
 netVisual_circle(cellchat@net$count, vertex.weight = groupSize, weight.scale = T, label.edge= F, title.name = "Number of interactions",arrow.width=0.8,arrow.size = 0.5)
 netVisual_circle(cellchat@net$weight, vertex.weight = groupSize, weight.scale = T, label.edge= F,title.name = "Interaction weights/strength",arrow.width=0.8,arrow.size = 0.5)
+
+# Figure5
 netAnalysis_signalingRole_network(cellchat, signaling = 'WNT', width = 10, height = 5 ,font.size = 10)
+
 
 saveRDS(cellchat,file = 'cellchat.rds')
 

@@ -251,6 +251,7 @@ pData(cds_sub)$Pseudotime <- seu$dpt_pseudotime
 pseudotime_de <- differentialGeneTest(cds_sub[rownames(cds_sub),], fullModelFormulaStr = "~sm.ns(Pseudotime)")
 
 Idents(seu) <- seu$celltype
+DefaultAssay(seu) <- 'RNA'
 markers <- FindAllMarkers(seu, only.pos = TRUE, min.pct = 0.25, logfc.threshold = 0.25)
 de <- pseudotime_de[unique(markers$gene), ]
 de <- subset(de, qval < 0.05)
