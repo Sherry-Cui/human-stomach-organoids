@@ -37,9 +37,18 @@ p3 <- DimPlot(stomach, reduction = "umap", group.by = "Cell_type",raster=FALSE,l
 p1|p2|p3
 
 # Figure3 Dotplot
-load(file = 'all.sample_d16_epi.rdata')
-DefaultAssay(all.sample_d16_epi) <- 'RNA'
+load(file = 'integrated.RData')
+
+d16 <- sample.integrated[, sample.integrated$day %in% 'D16'] 
+d16$Corrected_organ_group <- d16$day
+all.sample <- all[, all$Corrected_tissue %in% c('Esophagus','Duodenum','Stomach','Stomach-antrum','Stomach-corpus')] 
+all.sample_d16 <- merge(all.sample,d16)
+all.sample_d16 <- NormalizeData(all.sample_d16)
+all.sample_d16 <- ScaleData(all.sample_d16, features = rownames(all.sample_d16))
+
+all.sample_d16_epi <- all.sample_d16[, all.sample_d16$Major_cell_type %in% c('Epi','Epithelial')] 
 all.sample_d16_epi$Corrected_organ_group <- ordered(all.sample_d16_epi$Corrected_organ_group,levels=c('Intestine','Esophagus','Stomach','d16'))
+DefaultAssay(all.sample_d16_epi) <- 'RNA'
 gene <- c('CLDN18','SOX2','CDH1', # Stomach epithelium
           'TP63','KRT5', # Esophagus epithelium
           'CDX2') # Intestine epithelium

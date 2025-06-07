@@ -189,9 +189,6 @@ DotPlot(subset,group.by = 'cell.type',features = rev(gene),cols = c('lightgray',
 ######## Mesenchymal subtypes ------------------------------- 
 mesen <- sample.integrated[, sample.integrated$cell.type %in% "Mesenchymal"] 
 DefaultAssay(mesen) <- 'integrated'
-mesen <- NormalizeData(mesen, normalization.method = "LogNormalize", scale.factor = 1e4) 
-mesen <- FindVariableFeatures(mesen, selection.method = 'vst', nfeatures = 2000)
-mesen <- ScaleData(mesen)
 mesen <- RunPCA(mesen) 
 mesen <- RunUMAP(mesen, reduction = "pca", dims = 1:20)
 mesen <- FindNeighbors(mesen, dims = 1:10)
@@ -229,8 +226,6 @@ save(mesen,file = 'mesen.rdata')
 neuron <- sample.integrated[,sample.integrated$Major_cell_type %in% 'Neuronal'] 
 
 DefaultAssay(neuron) <- 'integrated'
-neuron <- FindVariableFeatures(neuron, selection.method = 'vst', nfeatures = 2000)
-neuron <- ScaleData(neuron)
 neuron <- RunPCA(neuron) 
 neuron <- RunUMAP(neuron, reduction = "pca", dims = 1:20)
 
