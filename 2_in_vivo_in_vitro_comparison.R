@@ -48,12 +48,6 @@ DotPlot(all.sample_d16_epi,features = gene,cols = c('lightgrey','red'),group.by 
 # in vivo/in vitro UMAP and correlation heatmap
 set.seed(20230518)
 
-da1 <- data.frame(colnames(sample.integrated),sample.integrated$lab2)
-da2 <- data.frame(unique(sample.integrated$lab2),c('DE','hPSC','Partial Epi','NE','Unidentified','Endothelial',      
-                                                   'Gastirc Epi','Gastirc Epi','Mesenchymal','Neuron' ,'Mesenchymal','Premigratory ENNC',
-                                                   'Enteroendocrine','Mesenchymal','NPC','Gastirc Epi','Migratory ENNC'))
-colnames(da2) <- c('sample.integrated.lab2','celltype')
-result <- join(da1,da2)
 sample.integrated$Major_cell_type <- result$celltype
 Idents(sample.integrated) <- 'Major_cell_type'
 sample<-subset(sample.integrated,downsample=2000)#23068
@@ -67,6 +61,7 @@ colnames(da2) <- c('sample.day','day')
 result <- join(da1,da2)
 sample$sample <- result$day
 
+all_sample.combined <- merge(vivo,sample)
 alldata.list <- SplitObject(all_sample.combined, split.by = "sample")
 alldata.list <- lapply(X = alldata.list, FUN = function(x) {
   DefaultAssay(x)="RNA"  
@@ -98,7 +93,7 @@ all_sample.combined$Major_cell_type<- factor(all_sample.combined$Major_cell_type
                                                                                             "Fetal_stomach_Endothelial",'Fetal_stomach_Erythroid',"Fetal_stomach_Immune"))
 all_sample.combined$day<- factor(all_sample.combined$day,levels = c("D4","D7","D10","D13","D16","Vivo"))
 
-# Extended Figure 6 
+# Extended Data Figure 6 
 DimPlot(all_sample.combined, group.by = "Major_cell_type",split.by = 'day',label = F,repel = T,raster=FALSE,cols = cols)+
   facet_wrap(~ day, nrow = 2)
 
@@ -144,7 +139,7 @@ bk <- c(seq(0,0.2,by=0.05),seq(0.21,0.3,by=0.03),seq(0.31,0.4,by=0.03),seq(0.41,
 # Figure3
 pheatmap(exp,cluster_cols = col_cluster,cluster_rows = col_cluster,display_numbers = F,fontsize = 20,angle_col = '315') 
 
-# D16+vivo integrated
+# Figure3 D16+vivo integrated 
 data <- subset(all_sample.combined,day=='Vivo'|day=='D16')
 num <- na.omit(match(colnames(vivo),colnames(data)))
 
@@ -183,15 +178,14 @@ all_sample.combined$Major_cell_type<- factor(all_sample.combined$Major_cell_type
                                                                                             'Neuron','ENCC','Endothelial','Enteroendocrine','Unidentified',
                                                                                             'Fetal_stomach_Epithelial','Fetal_stomach_Mesenchymal','Fetal_stomach_Neuronal',
                                                                                             "Fetal_stomach_Endothelial",'Fetal_stomach_Erythroid',"Fetal_stomach_Immune"))
-# Figure3
+
 DimPlot(all_sample.combined, reduction = "umap", group.by = 'Major_cell_type',split.by = 'sample',label = T,repel = T,raster=FALSE,pt.size = 1.5,cols = cols)
 
+# Extended Data Figure 6 
 DefaultAssay(all_sample.combined) <- 'RNA'
-unique(all_sample.combined$sample)
 vivo <- subset(all_sample.combined,Sample=='vivo')
 vitro <-  subset(all_sample.combined,Sample=='vitro')
 
-# Extended Figure 6 
 FeaturePlot(vivo,features = c('CDH1'),cols = c('lightgrey','red'),pt.size = 1)
 FeaturePlot(vitro,features = c('CDH1'),cols = c('lightgrey','red'),pt.size = 1)
 FeaturePlot(vivo,features = c('COL1A2'),cols = c('lightgrey','red'),pt.size = 1)
@@ -200,6 +194,7 @@ FeaturePlot(vivo,features = c('FLT1'),cols = c('lightgrey','red'),pt.size = 1)
 FeaturePlot(vitro,features = c('FLT1'),cols = c('lightgrey','red'),pt.size = 1)
 FeaturePlot(vivo,features = c('MAP2'),cols = c('lightgrey','red'),pt.size = 0.1)
 FeaturePlot(vitro,features = c('MAP2'),cols = c('lightgrey','red'),pt.size = 0.5)
+
 
 
 #### In vivo and In vitro epithelium 
@@ -234,7 +229,7 @@ epi$subtype <- plyr::mapvalues(x=epi$subtype,from=c('Proliferative gastric epith
 epi.subset <- epi[, epi$subtype %in% c('Fetal_stomach_precursor','Fetal_stomach_antrum','Fetal_stomach_fundus','Fetal_stomach_gland')] #784
 epi.subset$split <- 'In vivo' 
 
-# Dotplot
+# Figure4 Dotplot
 load(file = 'allepi.reintegrate.rdata')
 
 gene <- c('EZH2','FOXO3','TCF4', # Precursor
@@ -243,20 +238,15 @@ gene <- c('EZH2','FOXO3','TCF4', # Precursor
           'TFF2','UPK1B', 'PLAC8'# Secreting
 ) 
 DefaultAssay(counts) <- 'RNA'
-# Figure4
+
 p1 <- DotPlot(counts,features = gene,group.by = 'lab')+RotatedAxis()+coord_flip()+ 
   scale_color_gradientn(colors = c("grey85", brewer.pal(9, "OrRd"))) 
 p2 <- DotPlot(epi.subset,features = gene,group.by = 'subtype')+RotatedAxis()+coord_flip()+ 
   scale_color_gradientn(colors = c("grey85", brewer.pal(9, "OrRd")))
 p1|p2
 
-# Figure4 UMAP
-DimPlot(counts,group.by = 'lab',cols =c('#E95C59', '#E4C755', '#58A4C3', '#23452F'),label = F)
-DimPlot(epi.subset,group.by = 'subtype',cols =c('#E95C59', '#E4C755', '#58A4C3', '#23452F'),label = F)
-
-# FeaturePlot
+# Figure4 FeaturePlot
 d16 <- subset(counts,day=='D16')
-# Figure4
 # In vivo
 FeaturePlot(epi.subset,features = 'PDX1',slot = 'scale.data',pt.size = 0.2,order = T)+
   scale_colour_gradientn(colours = colorRampPalette(c("#DCDCDC",'#FDF5E6','#FFA07A',"#fc2c14","#fc2c14",'#CD0000','#CD0000'))(30),labels = c("low", "high"),
@@ -270,6 +260,9 @@ FeaturePlot(epi.subset,features = 'HOXB2',slot = 'scale.data',pt.size = 0.2,orde
 FeaturePlot(epi.subset,features = 'HOXC5',slot = 'scale.data',pt.size = 0.2)+
   scale_colour_gradientn(colours = colorRampPalette(c("#DCDCDC","#fc2c14",'#CD0000','#CD0000','#CD0000','#CD0000','#CD0000','#CD0000','#CD0000','#CD0000','#CD0000','#CD0000'))(30),
                          labels = c("low", "high"),breaks=c(-0.1,10))
+FeaturePlot(epi.subset,features = 'NR2F2',slot = 'scale.data',pt.size = 0.2)+
+  scale_colour_gradientn(colours = colorRampPalette(c("#DCDCDC",'#FDF5E6','#FFA07A',"#fc2c14",'#CD0000'))(30),labels = c("low", "high"),
+                         breaks=c(-0.95,3))
 # In vitro
 FeaturePlot(d16,features = 'PDX1',slot = 'scale.data',pt.size = 0.2,order = T)+
   scale_colour_gradientn(colours = colorRampPalette(c("#DCDCDC",'#FDF5E6','#FFA07A',"#fc2c14",'#CD0000'))(30),labels = c("low", "high"),
@@ -283,16 +276,11 @@ FeaturePlot(d16,features = 'HOXB2',slot = 'scale.data',pt.size = 0.2,order = T)+
 FeaturePlot(d16,features = 'HOXC5',slot = 'scale.data',pt.size = 0.2)+
   scale_colour_gradientn(colours = colorRampPalette(c("#DCDCDC",'#FDF5E6','#FFA07A',"#fc2c14",'#CD0000','#CD0000','#CD0000','#CD0000','#CD0000'))(30),
                          labels = c("low", "high"),breaks=c(-0,10))
-
-# Figure6
-FeaturePlot(epi.subset,features = 'NR2F2',slot = 'scale.data',pt.size = 0.2)+
-  scale_colour_gradientn(colours = colorRampPalette(c("#DCDCDC",'#FDF5E6','#FFA07A',"#fc2c14",'#CD0000'))(30),labels = c("low", "high"),
-                         breaks=c(-0.95,3))
 FeaturePlot(d16,features = 'NR2F2',slot = 'scale.data',pt.size = 0.2)+
   scale_colour_gradientn(colours = colorRampPalette(c("#DCDCDC","#DCDCDC",'#FDF5E6','#FFA07A',"#fc2c14",'#CD0000','#CD0000'))(30),labels = c("low", "high"),
                          breaks=c(-0.73,4.3))
 
-# integrate
+# Figure4 integrate
 epi.subset$orig.ident <- 'lite'
 counts$subtype <- counts$lab
 all.data <- merge(counts,lite_data)
@@ -325,7 +313,7 @@ DimPlot(all_sample.combined,split.by  = 'cell.type',label = T)
 
 all_sample.combined$subtype <- ordered(all_sample.combined$subtype,
                                        levels=c('Precursor','Fundic Epi','Antral Epi','Gland','Fetal_stomach_precursor','Fetal_stomach_fundus','Fetal_stomach_antrum','Fetal_stomach_gland'))
-# Figure4
+
 vitro <- subset(all_sample.combined,split=='in vitro')
 p1 <- DimPlot(vitro,group.by = 'celltype',cols = c('#E95C59', '#E4C755', '#58A4C3', '#23452F'),pt.size = 1)+ scale_x_reverse()
 
@@ -333,7 +321,7 @@ vivo <- subset(all_sample.combined,split=='In vivo')
 p2 <- DimPlot(vivo,group.by = 'celltype',cols = c('#E95C59', '#E4C755', '#58A4C3', '#23452F'),pt.size = 2.5)+ scale_x_reverse()
 p1+p2
 
-# spearman correlation
+# Supplementary Figure 5 spearman correlation
 Idents(all_sample.combined) <- 'celltype'
 exp<- AverageExpression(all_sample.combined)
 data <- data.frame(exp$integrated)
@@ -347,13 +335,13 @@ spearman_dist_matrix <- as.dist(1 - data)
 
 hc <- hclust(spearman_dist_matrix)
 bk<-c(seq(0.6,0.9,by=0.03),seq(0.91,0.934,by=0.001),seq(0.935,0.96,by=0.01),seq(0.961,0.98,by=0.001),seq(0.981,1,by=0.01))
-# Supplementary Figure5
 pheatmap(data, 
          display_numbers = F,
          cluster_rows = hc,
          cluster_cols = hc,angle_col = '315',
          legend_breaks=c(0.6,1),
          breaks=bk,color = colorRampPalette(rev(brewer.pal(n = 7, name ="RdYlBu")))(60))
+
 
 
 ###### In vitro and in vivo expression of ECM and secreting protein genes in Epi lineage 
@@ -416,7 +404,7 @@ p1|p2
 
 
 
-###### ICC in multi-lineage PFG 
+###### Extended Data Figure7 ICC in multi-lineage PFG 
 # Article:Primate gastrulation and early organogenesis at single-cell resolution
 meta <- read.csv(file = './MFE56636-meta.csv')
 rawdata <- Read10X('./filtered_feature_bc_matrix')
@@ -448,7 +436,6 @@ d7 <- sample.integrated[, sample.integrated$day %in% 'D7']
 d7_negative <- subset(x = d7, subset = FOXA2 == 0) 
 d7_negative <- subset(x = d7_negative, subset = CDH1 == 0) 
 sox2_gata4 <- subset(x = d7_negative, subset = GATA4 > 0|SOX2>0) 
-# Extended Data Figure7
 DimPlot(sox2_gata4,group.by = 'cell.type',label = F,cols = c("#5050FFFF","#CE3D32FF","#466983FF","#A6CEE3","#1A0099FF"))+ggtitle(' ')
 
 # MapQuery
@@ -535,13 +522,13 @@ M <- match(colnames(M),colnames(refquery))
 refquery$cell[M] <- "Mesoderm"
 EN <- match(colnames(EN),colnames(refquery))
 refquery$cell[EN] <- "Endoderm"
-# Extended Data Figure7
+
 p1 <- DimPlot(refquery, group.by = 'cell', shuffle = TRUE,label=F,repel = T,cols = c('#D3D3D3',"#5050FFFF","#CE3D32FF","#466983FF","#1A0099FF","#A6CEE3"),order = c("Early NPC","Unidentified","Mesenchymal","DE","hPSC"),pt.size = 1)
 p2 <- DimPlot(ref_obj, group.by = 'celltype', shuffle = TRUE,label=F,cols = c("#A6CEE3",'#D8E88D',"#5050FFFF","#466983FF"),pt.size = 1)
 
 
 
-###### NE in gastroids and the neuroepithelium in week 3 human embryos
+###### Extended Data Figure 7 NE in gastroids and the neuroepithelium in week 3 human embryos
 # Article:The single-cell and spatial transcriptional landscape of human gastrulation and brain
 data <- Read10X(data.dir = "GSM4695826_PCW3-01/")
 data <- CreateSeuratObject(counts = data, project = "PC3", min.cells = 3, min.features = 200)
@@ -636,7 +623,6 @@ for (i in 1:5) {
 }
 
 bk <- c(seq(0,0.2,by=0.03),seq(0.21,0.3,by=0.03),seq(0.31,0.4,by=0.03),seq(0.41,0.5,by=0.03),seq(0.51,0.72,by=0.03),seq(0.73,0.74,by=0.03),seq(0.75,0.76,by=0.005),seq(0.77,0.78,by=0.005),seq(0.79,0.8,by=0.03),seq(0.81,0.90,by=0.03),seq(0.91,1,by=0.03))###0.02(æœ‰é¢œè‰?)æˆ–è€?0.03(ç™?)
-# Extended Data Figure6
 pheatmap(data, 
          display_numbers = F,
          cluster_rows = T,

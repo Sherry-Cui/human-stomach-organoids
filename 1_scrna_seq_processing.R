@@ -55,7 +55,7 @@ sample.integrated <- FindClusters(sample.integrated, resolution = seq(0.1,1,0.1)
 
 save(sample.integrated,file = "./integrated.RData")
 
-######## Extended Data Figure 5 UMAP 
+######## Extended Data Figure 6 UMAP 
 col=pal_igv('default',alpha = 1)(51)
 p1 <- DimPlot(sample.integrated, reduction = "umap", group.by = "day",label = F,raster=FALSE,cols = col[35:51])
 p2 <- DimPlot(sample.integrated, reduction = "umap", group.by = "cell.type",label = F,raster=FALSE,cols = col)
@@ -63,7 +63,7 @@ p2 <- DimPlot(sample.integrated, reduction = "umap", group.by = "cell.type",labe
 ######## Figure3 UMAP by days
 DimPlot(sample.integrated, reduction = "umap", group.by = "cell.type",split.by = 'day',label = F,raster=FALSE,cols = col)
 
-######## Figure3 cell ratio image
+######## Extended Data Figure 6  cell ratio image
 Cellratio <- prop.table(table(sample.integrated$cell.type, sample.integrated$day), margin = 2)
 Cellratio <- as.data.frame(Cellratio)
 Cellratio$cell_type <- Cellratio$Var1
@@ -90,7 +90,7 @@ gene <- c('POU5F1','NANOG', #hPSC
           'SST','GHRL')#Enteroendocrine
 DotPlot(sample.integrated, features =gene, group.by = "cell.type",cols = c("lightgrey",'#FF0000'))+ RotatedAxis() 
 
-######## Extended Data Figure5 featureplot
+######## Extended Data Figure 6  featureplot
 FeaturePlot(sample.integrated,features = c('EPCAM','PAX6','COL3A1'),cols = c('lightgrey','red'),ncol = 3,label = F)
 
 ######## epithelial subtypes ------------------------------- 
@@ -132,7 +132,7 @@ DimPlot(counts,group.by = 'cell.type',cols =col)
 # Extended Data Figure9 featureplot 
 FeaturePlot(counts,features = c('PDX1','SOX2'),cols = c('lightgrey','red'),split.by = 'day',label = F)
 
-# DEG heatmap
+# Extended Data Figure9 DEG heatmap
 epiremovedgland <- counts[, counts$cell.type %in% c("Fundus1","Fundus2","Antrum1","Antrum2","Antrum3")] 
 
 DefaultAssay(epiremovedgland) <- 'RNA'
@@ -150,7 +150,6 @@ mt <- t(mt[,-1])
 
 cts <- as.matrix(mt[unique(markers$gene),])
 bk <- c(seq(-1,0,by=0.005),seq(0.001,0.4,by=0.001))
-# Extended Data Figure9
 ComplexHeatmap::pheatmap(cts,show_colnames =T,show_rownames = F,breaks = bk,legend_breaks=seq(-1,0.4,0.2),
                          color =colorRampPalette(rev(brewer.pal(n = 35, name ="RdYlBu")))(length(bk)), 
                          cluster_rows = F,
@@ -158,7 +157,7 @@ ComplexHeatmap::pheatmap(cts,show_colnames =T,show_rownames = F,breaks = bk,lege
                          name= 'Scaled Expression')
 
 
-######## Partial Epi and Epithelium DEG heatmap -------------------
+######## Supplementary Figure 3 Partial Epi and Epithelium DEG heatmap -------------------
 subset <- sample.integrated[, sample.integrated$cell.type %in% c('Partial Epi','Epithelium')]
 subset$cell.type <- ordered(subset$cell.type,levels=c('Partial Epi','Epithelium'))
 
@@ -176,7 +175,6 @@ mt <- t(mt[,-1])
 cts <- as.matrix(mt[unique(markers$gene),])
 cts <- na.omit(cts)
 bk <- c(seq(-0.5,0,by=0.01),seq(0.005,0.2,by=0.005))
-# Supplementary Figure4
 ComplexHeatmap::pheatmap(cts,show_colnames =T,show_rownames = F,breaks = bk,legend_breaks=seq(-0.5,0.2,0.1),
                          color =colorRampPalette(rev(brewer.pal(n = 11, name ="RdYlBu")))(length(bk)), 
                          cluster_rows = F,
@@ -184,7 +182,7 @@ ComplexHeatmap::pheatmap(cts,show_colnames =T,show_rownames = F,breaks = bk,lege
                          name= 'Scaled Expression')
 
 gene <- c('POU5F1','SOX17','CXCR4','SFRP1','CDH1','FOS','CDH6')
-# Supplementary Figure4
+# Supplementary Figure 3
 DotPlot(subset,group.by = 'cell.type',features = rev(gene),cols = c('lightgray','red'))+RotatedAxis()+coord_flip()
 
 
@@ -202,7 +200,7 @@ DimPlot(mesen, reduction = "umap", group.by = "integrated_snn_res.0.1",raster=FA
 mesen$cell.type <- mesen$integrated_snn_res.0.1
 mesen$cell.type <- plyr::mapvalues(x=mesen$cell.type, from=c("0","2","1"), 
                                    to=c("Mesenchymal1","Mesenchymal2","Mesenchymal3"))
-### DEG heatmap
+# Supplementary Figure 4 DEG heatmap
 DefaultAssay(mesen) <- 'RNA'
 marker <- FindAllMarkers(mesen, only.pos = TRUE, min.pct = 0.25, logfc.threshold = 0.25)
 marker <- filter(marker,p_val_adj < 0.05)
@@ -218,7 +216,6 @@ mt <- t(mt[,-1])
 cts <- as.matrix(mt[unique(marker$gene),])
 cts <- na.omit(cts)
 bk <- c(seq(-0.6,0,by=0.01),seq(0.01,0.5,by=0.01))
-# Supplementary Figure5
 ComplexHeatmap::pheatmap(cts,show_colnames =T,show_rownames = F,breaks = bk,legend_breaks=seq(-1,0.5,0.5),
                          color =colorRampPalette(rev(brewer.pal(n = 35, name ="RdYlBu")))(length(bk)), 
                          cluster_rows = F,
@@ -255,7 +252,7 @@ num2 <- match(colnames(Neu2),colnames(neuron))
 neuron$cell.type[num2] <- 'Neuron2'
 DimPlot(neuron,group.by = 'cell.type',label = F,cols = c("#A6CEE3","#1F78B4","#e7c23e","#802268FF", "#6BD76BFF","#FF4500"))
 
-# heatmap 
+# Extended Data Figure 7 heatmap 
 mt.lab <- as.data.frame(t(as.matrix(GetAssayData(neuron, assay = "RNA", slot = "scale.data"))))
 group.by <- 'cell.type'
 mt.lab <- aggregate(mt.lab, by=list(neuron@meta.data[[group.by]]), FUN="mean")
@@ -264,8 +261,6 @@ mt.lab <- t(mt.lab[,-1])
 
 cts <- as.matrix(mt.lab[rev(c('GBX2','SOX3','NKX6-1','HOXA4','HOXA5','ERBB3','SOX10','TBX3')),])
 bk <- c(seq(-1,1,by=0.1),seq(1,2,by=0.1))
-
-# Extended Data Figure6
 pheatmap(cts, cluster_cols = F,cluster_rows = F,breaks = bk,legend_breaks=seq(-1,2,1),
          color = colorRampPalette(rev(brewer.pal(n = 11, name ="RdYlBu")))(length(bk))
 )

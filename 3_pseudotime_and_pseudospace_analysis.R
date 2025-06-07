@@ -30,7 +30,7 @@ VEC=sce@reductions$umap@cell.embeddings
 # Extended Data Figure8
 plotCytoTRACE(results, phenotype = pheno,emb = VEC)
 
-# Supplementary Figure5 Ecm gene heatmap
+# Supplementary Figure 4 Ecm gene heatmap
 highlight <- read_excel('ECM_gene.xlsx') 
 DefaultAssay(sce) <- 'RNA'
 sce <- ScaleData(sce)
@@ -91,7 +91,7 @@ VEC=sce@reductions$umap@cell.embeddings
 # Extended Data Figure8
 plotCytoTRACE(results, phenotype = pheno,emb = VEC)
 
-# Supplementary Figure5 Ecm gene heatmap
+# Supplementary Figure 4 Ecm gene heatmap
 highlight <- read_excel('ECM_gene.xlsx') 
 DefaultAssay(sce) <- 'RNA'
 sce <- ScaleData(sce)
@@ -156,7 +156,7 @@ VEC=sce@reductions$umap@cell.embeddings
 plotCytoTRACE(results, phenotype = pheno,emb = VEC)
 
 
-# Supplementary Figure5 Ecm gene heatmap 
+# Supplementary Figure 4 Ecm gene heatmap 
 highlight <- read_excel('ECM_gene.xlsx') 
 DefaultAssay(sce) <- 'RNA'
 sce <- ScaleData(sce)
@@ -223,7 +223,7 @@ library(URD)
 library(clusterProfiler)
 library(org.Hs.eg.db)
 
-#  supp_figure9 Epithelium DPT
+#  Figure4 Epithelium DPT
 library(reticulate)
 library(viridisLite)
 
@@ -235,14 +235,14 @@ pseu <- read.csv(file = 'epiremovegland_pseudotime.csv')
 seu$dpt_pseudotime <- pseu$dpt_pseudotime
 tmp <- as.data.frame(seu@reductions$diffmap@cell.embeddings)
 tmp <- data.frame(tmp,seu@meta.data)
-# Figure4
+
 ggplot(tmp, aes(x = DC_1, y = DC_2, colour = dpt_pseudotime)) + geom_point() + facet_wrap(tmp$day)+
         scale_color_gradientn(colors = viridis(8))
 ggplot(tmp, aes(x = DC_1, y = DC_2, colour = dpt_pseudotime)) + geom_point(size=0.3)+
         scale_color_gradientn(colors = viridis(8))+theme_classic() 
 
 
-# heatmap of dynamic genes along development trajectory  ---------
+# Extended Data Figure9 heatmap of dynamic genes along development trajectory ---------
 load(file = 'seu.rdata')
 
 cds_sub <- mycds[,pData(mycds)$celltype %in% c('Precursor',"Antrum1",'Antrum2','Antrum3','Fundus1','Fundus2')] 
@@ -253,6 +253,7 @@ pseudotime_de <- differentialGeneTest(cds_sub[rownames(cds_sub),], fullModelForm
 Idents(seu) <- seu$celltype
 DefaultAssay(seu) <- 'RNA'
 markers <- FindAllMarkers(seu, only.pos = TRUE, min.pct = 0.25, logfc.threshold = 0.25)
+markers <- filter(markers,p_val_adj < 0.05)
 de <- pseudotime_de[unique(markers$gene), ]
 de <- subset(de, qval < 0.05)
 
@@ -268,8 +269,8 @@ mat <- cbind(mat1,mat2)
 mat <- t(apply(mat,1,function(x){smooth.spline(x,df=3)$y}))
 mat <- t(apply(mat,1,function(x){(x-mean(x))/sd(x)}))
 
-meta1 <- fundus@meta.data[,c("celltype","day")]
-meta2 <- antrum@meta.data[,c("celltype","day")]
+meta1 <- fundus@meta.data[,c("celltype")]
+meta2 <- antrum@meta.data[,c("celltype")]
 meta <- rbind(meta1,meta2)
 meta$celltype <- factor(meta$celltype,levels = c("Precursor","Fundus1","Fundus2",'Antrum1','Antrum2','Antrum3'))
 
@@ -300,7 +301,7 @@ order <- data.frame(number=number)
 dt <- data.frame(gene=rownames(mat),number=1:2630)
 dt <- full_join(order,dt,by = 'number')
 matrix <- mat[dt$gene,]
-# Extended Data Figure9 heatmap
+
 Heatmap(
   matrix,
   name                         = "Smoothed expression",
@@ -332,7 +333,7 @@ dotplot(bp) + theme(axis.text.x = element_text(
   vjust = 0.5, hjust = 0.5
 ))
 
-# Absolute time and relative time
+# Extended Data Figure9 Absolute time and relative time
 seu <- seu[,seu$day %in% c('D7','D10','D13','D16')]
 seu$day <- ordered(seu$day,levels =c('D16', 'D13', 'D10', 'D7'))
 Idents(seu) <- seu$celltype
@@ -342,7 +343,7 @@ data <- data %>%
   arrange(factor(day, levels = c('D16', 'D13', 'D10', 'D7')))   
 
 col <- c('#E63863',"#F1BB72","#53A85F","#E5D2DD")
-# Extended Data Figure9
+
 ggplot(data,aes(x=celltype1,y=dpt_pseudotime))+
   geom_violin(width =0.8,fill='grey90',color='grey90')+
   geom_quasirandom(aes(color=day),width = 0.2,size=0.01)+ 
@@ -368,7 +369,7 @@ ggplot(data,aes(x=celltype1,y=dpt_pseudotime))+
   xlab('Cell type')+RotatedAxis()
 
 
-######## figure5 URD on day 16 epithelial cells ------------------------------
+######## Figure 4 URD on day 16 epithelial cells ------------------------------
 d16 <- epiremovegland[, epiremovegland$day %in% "D16" ] 
 d16$cell.type <- ordered(d16$cell.type,levels = c("Fundus1","Fundus2","Antrum1","Antrum2","Antrum3"))
 
@@ -397,7 +398,7 @@ root.cells <- rownames(object@meta)[object@meta$cell.type=="Fundus1"]
 flood.result <- floodPseudotime(object, root.cells=root.cells, n=10, minimum.cells.flooded=2, verbose=T)
 object <- floodPseudotimeProcess(object, flood.result, floods.name="pseudotime", max.frac.NA=0.4, pseudotime.fun=mean, stability.div=20)
 gg.data <- cbind(object@pseudotime, object@meta[rownames(object@pseudotime),])
-# Figure4
+
 col <- c("#A6CEE3","#1F78B4","#FB9A99","#E95C59","#6A3D9A","#33A02C" )
 ggplot(gg.data, aes(x=pseudotime, color=cell.type, fill=cell.type))+ geom_density(alpha=0.5)+ 
   theme_bw()+scale_fill_manual(values=col)+ scale_color_manual(values=col)
@@ -421,9 +422,6 @@ mat <- t(apply(mat,1,function(x){smooth.spline(x,df=3)$y}))
 mat <- t(apply(mat,1,function(x){(x-mean(x))/sd(x)}))
 meta <- d16@meta.data[,c("cell.type",'day')]
 meta$cell.type <- factor(meta$cell.type,levels = c("Fundus1","Fundus2",'Antrum1','Antrum2','Antrum3'))
-type_col <- setNames(c("#A6CEE3","#1F78B4","#FB9A99","#E95C59","#6A3D9A"),
-                     c("Fundus1","Fundus2",'Antrum1','Antrum2','Antrum3'))
-col_anno <- HeatmapAnnotation(Cell_type=meta$cell.type,col=list(Cell_type = type_col))
 
 # Extended Data Figure9 HOX gene heatmap
 gene <- rownames(cds_sub)[grep("^HOX", rownames(cds_sub))] 
