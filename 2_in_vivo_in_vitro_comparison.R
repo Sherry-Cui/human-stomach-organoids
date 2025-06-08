@@ -445,10 +445,15 @@ d7 <- sample.integrated[, sample.integrated$day %in% 'D7']
 d7_negative <- subset(x = d7, subset = FOXA2 == 0) 
 d7_negative <- subset(x = d7_negative, subset = CDH1 == 0) 
 sox2_gata4 <- subset(x = d7_negative, subset = GATA4 > 0|SOX2>0) 
-DimPlot(sox2_gata4,group.by = 'cell.type',label = F,cols = c("#5050FFFF","#CE3D32FF","#466983FF","#A6CEE3","#1A0099FF"))+ggtitle(' ')
+data <- subset(sox2_gata4,subset=GATA4>0&SOX2>0)
+num <- match(colnames(data),colnames(sox2_gata4))
+data2 <- sox2_gata4[,-num]
 
 # MapQuery
-query_obj <- sox2_gata4
+query_obj <- data2
+DimPlot(query_obj, reduction = "umap", group.by = "cell.type",
+        label = F,repel = T,label.size = 6,raster=FALSE,cols = c("#5050FFFF","#CE3D32FF","#466983FF","#A6CEE3","#1A0099FF"))
+
 ref_obj <- sce
 ref_obj[["umap.new"]] <- CreateDimReducObject(embeddings = ref_obj[["umap"]]@cell.embeddings, key = "UMAPnew_")
 # set UMAP models
@@ -470,6 +475,7 @@ Misc(ref_obj[["umap.new"]], slot="model")$num_precomputed_nns <- 1
 
 ref_obj <- FindClusters(ref_obj,resolution = 0.5)
 DimPlot(ref_obj,group.by = 'integrated_snn_res.0.5',label=T,repel=T)
+DimPlot(ref_obj,group.by = 'C38A2',label=T,repel=T)
 
 name <- data.frame(colnames(ref_obj),ref_obj$integrated_snn_res.0.5)
 cell <- data.frame(c(0:19),c('Ectoderm','Mesoderm','Mesoderm','Endoderm','Mesoderm','EPI','Mesoderm','Endoderm','Mesoderm','Ectoderm','Mesoderm','Mesoderm','Ectoderm','Mesoderm','Mesoderm','Ectoderm','Endoderm','Endoderm','Mesoderm','Mesoderm'))
@@ -485,6 +491,7 @@ anchors <- FindTransferAnchors(
   normalization.method = "LogNormalize",
   reference.reduction = "pca",
   dims = 1:20)
+
 test_obj <- MapQuery(
   anchorset = anchors,
   query = query_obj,
@@ -501,7 +508,7 @@ test_obj$id <- 'query'
 refquery <- merge(ref_obj,test_obj)
 refquery[["umap"]] <- merge(ref_obj[["umap"]],
                             test_obj[["ref.umap"]])
-refquery$cell <- ' '
+refquery$cell <- 'Other cells'
 D <- subset(refquery,cell.type=="DE")
 E <- subset(refquery,cell.type=="NE")
 h <- subset(refquery,cell.type=="hPSC")
@@ -517,8 +524,9 @@ M <- match(colnames(M),colnames(refquery))
 refquery$cell[M] <- "Mesenchymal"
 U <- match(colnames(U),colnames(refquery))
 refquery$cell[U] <- "Unidentified"
-
-refquery$cell <- ' '
+p1 <- DimPlot(refquery, group.by = 'cell', shuffle = TRUE,label=F,repel = T,cols = c('#D3D3D3',"#CE3D32FF","#5050FFFF","#1A0099FF","#466983FF","#A6CEE3"),pt.size = 1 ,order = c("NE" ,"Mesenchymal","Unidentified","hPSC" ,"DE","Other cells"))
+      
+refquery$cell <- 'Other cells'
 EC <- subset(refquery,predicted.Major=="Ectoderm")
 EP <- subset(refquery,predicted.Major=="EPI")
 M <- subset(refquery,predicted.Major=="Mesoderm")
@@ -532,8 +540,8 @@ refquery$cell[M] <- "Mesoderm"
 EN <- match(colnames(EN),colnames(refquery))
 refquery$cell[EN] <- "Endoderm"
 
-p1 <- DimPlot(refquery, group.by = 'cell', shuffle = TRUE,label=F,repel = T,cols = c('#D3D3D3',"#5050FFFF","#CE3D32FF","#466983FF","#1A0099FF","#A6CEE3"),order = c("Early NPC","Unidentified","Mesenchymal","DE","hPSC"),pt.size = 1)
-p2 <- DimPlot(ref_obj, group.by = 'celltype', shuffle = TRUE,label=F,cols = c("#A6CEE3",'#D8E88D',"#5050FFFF","#466983FF"),pt.size = 1)
+p2 <- DimPlot(ref_obj, group.by = 'celltype', shuffle = TRUE,label=F,cols = c("#A6CEE3",'#D8E88D',"#5050FFFF","#466983FF"),pt.size = 1,)
+
 
 
 
