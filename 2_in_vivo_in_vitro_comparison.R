@@ -254,7 +254,7 @@ p2 <- DotPlot(epi.subset,features = gene,group.by = 'subtype')+RotatedAxis()+coo
   scale_color_gradientn(colors = c("grey85", brewer.pal(9, "OrRd")))
 p1|p2
 
-# Figure4 FeaturePlot
+# Extended Data Figure 9 FeaturePlot
 d16 <- subset(counts,day=='D16')
 # In vivo
 FeaturePlot(epi.subset,features = 'PDX1',slot = 'scale.data',pt.size = 0.2,order = T)+

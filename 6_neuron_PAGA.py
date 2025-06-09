@@ -1,4 +1,4 @@
-# Extended Data Figure6
+# Extended Data Figure7
 # import module
 import os
 import scipy
