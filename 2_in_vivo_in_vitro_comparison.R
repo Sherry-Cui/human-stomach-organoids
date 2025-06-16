@@ -234,7 +234,7 @@ epi$subtype <- plyr::mapvalues(x=epi$subtype,from=c('Proliferative gastric epith
                                                     'Antrum stem cell','Antrum proliferative mucous cell','Corpus stem cell',
                                                     'Corpus mucous neck cell','Antral gland cell','Antral surface mucous cell','Corpus surface mucous cell'),
                                to=c('Fetal_stomach_precursor','Fetal_stomach_antrum','Fetal_stomach_antrum','Fetal_stomach_fundus','Fetal_stomach_fundus',
-                                    'Fetal_stomach_gland','Fetal_stomache_gland','Fetal_stomach_gland'))
+                                    'Fetal_stomach_gland','Fetal_stomach_gland','Fetal_stomach_gland'))
 epi.subset <- epi[, epi$subtype %in% c('Fetal_stomach_precursor','Fetal_stomach_antrum','Fetal_stomach_fundus','Fetal_stomach_gland')] #784
 epi.subset$split <- 'In vivo' 
 
