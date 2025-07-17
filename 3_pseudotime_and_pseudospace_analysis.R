@@ -209,7 +209,7 @@ embbing <- data.frame(neuron@reductions$umap@cell.embeddings)
 results = CytoTRACE(expr, ncores = 8, subsamplesize = 1000)
 plotCytoTRACE(
   cyto_obj = results, 
-  phenotype = marrow_10x_pheno, 
+  phenotype = pheno, 
   emb = embbing 
 )
 

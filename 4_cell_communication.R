@@ -39,14 +39,14 @@ head(cellchat@LR$LRsig)
 cellchat <- netAnalysis_computeCentrality(cellchat, slot.name = "netP")
 
 # Supplementary Figure7
-netVisual_aggregate(cellchat, signaling = 'WNT', vertex.receiver = vertex.receiver, pt.title=20,vertex.label.cex = 1.7,arrow.width=0.8,arrow.size = 0.5)
-netVisual_aggregate(cellchat, signaling = 'ncWNT',  vertex.receiver = vertex.receiver,pt.title=20,vertex.label.cex = 1.7,arrow.width=0.8,arrow.size = 0.5)
-netVisual_aggregate(cellchat, signaling = 'CXCL',  vertex.receiver = vertex.receiver,pt.title=20,vertex.label.cex = 1.7,arrow.width=0.8,arrow.size = 0.5)
-netVisual_aggregate(cellchat, signaling = 'FGF',  vertex.receiver = vertex.receiver,pt.title=20,vertex.label.cex = 1.7,arrow.width=0.8,arrow.size = 0.5)
-netVisual_aggregate(cellchat, signaling = 'PDGF',  vertex.receiver = vertex.receiver,pt.title=20,vertex.label.cex = 1.7,arrow.width=0.8,arrow.size = 0.5)
-netVisual_aggregate(cellchat, signaling = 'BMP',  vertex.receiver = vertex.receiver,pt.title=20,vertex.label.cex = 1.7,arrow.width=0.8,arrow.size = 0.5)
-netVisual_aggregate(cellchat, signaling = 'IGF',  vertex.receiver = vertex.receiver,pt.title=20,vertex.label.cex = 1.7,arrow.width=0.8,arrow.size = 0.5)
-netVisual_aggregate(cellchat, signaling = 'GAS',  vertex.receiver = vertex.receiver,pt.title=20,vertex.label.cex = 1.7,arrow.width=0.8,arrow.size = 0.5)
+netVisual_aggregate(cellchat, signaling = 'WNT',pt.title=20,vertex.label.cex = 1.7,arrow.width=0.8,arrow.size = 0.5)
+netVisual_aggregate(cellchat, signaling = 'ncWNT',pt.title=20,vertex.label.cex = 1.7,arrow.width=0.8,arrow.size = 0.5)
+netVisual_aggregate(cellchat, signaling = 'CXCL',pt.title=20,vertex.label.cex = 1.7,arrow.width=0.8,arrow.size = 0.5)
+netVisual_aggregate(cellchat, signaling = 'FGF',pt.title=20,vertex.label.cex = 1.7,arrow.width=0.8,arrow.size = 0.5)
+netVisual_aggregate(cellchat, signaling = 'PDGF',pt.title=20,vertex.label.cex = 1.7,arrow.width=0.8,arrow.size = 0.5)
+netVisual_aggregate(cellchat, signaling = 'BMP',pt.title=20,vertex.label.cex = 1.7,arrow.width=0.8,arrow.size = 0.5)
+netVisual_aggregate(cellchat, signaling = 'IGF',pt.title=20,vertex.label.cex = 1.7,arrow.width=0.8,arrow.size = 0.5)
+netVisual_aggregate(cellchat, signaling = 'GAS',pt.title=20,vertex.label.cex = 1.7,arrow.width=0.8,arrow.size = 0.5)
 
 
 netVisual_bubble(cellchat, remove.isolate = FALSE, signaling = c("PDGF",'BMP'), 

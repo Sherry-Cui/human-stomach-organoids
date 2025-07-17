@@ -241,7 +241,7 @@ DimPlot(Neu, reduction = "umap", group.by = "integrated_snn_res.0.025",label = T
 Neu1 <- subset(Neu,integrated_snn_res.0.025==0)
 num1 <- match(colnames(Neu1),colnames(neuron))
 neuron$cell.type <- as.character(neuron$cell.type)
-neuron$celltype[num1] <- 'Neuron1'
+neuron$cell.type[num1] <- 'Neuron1'
 Neu2 <- subset(Neu,integrated_snn_res.0.025==1)
 num2 <- match(colnames(Neu2),colnames(neuron))
 neuron$cell.type[num2] <- 'Neuron2'
