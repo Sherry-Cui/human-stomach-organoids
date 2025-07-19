@@ -94,7 +94,7 @@ DotPlot(sample.integrated, features =gene, group.by = "cell.type",cols = c("ligh
 FeaturePlot(sample.integrated,features = c('EPCAM','PAX6','COL3A1'),cols = c('lightgrey','red'),ncol = 3,label = F)
 
 ######## epithelial subtypes ------------------------------- 
-dt = sample.integrated[, sample.integrated$cell.type %in% "Epithelium" ]
+dt <- subset(sample.integrated, cell.type == "Epithelium")
 counts <- dt@assays$RNA@counts
 counts <- CreateSeuratObject(counts = counts)
 counts$orig.ident <- dt$orig.ident
@@ -133,7 +133,7 @@ DimPlot(counts,group.by = 'cell.type',cols =col)
 FeaturePlot(counts,features = c('PDX1','SOX2'),cols = c('lightgrey','red'),split.by = 'day',label = F)
 
 # Extended Data Figure9 DEG heatmap
-epiremovedgland <- counts[, counts$cell.type %in% c("Fundus1","Fundus2","Antrum1","Antrum2","Antrum3")] 
+epiremovedgland <- subset(counts, cell.type %in% c("Fundus1", "Fundus2", "Antrum1", "Antrum2", "Antrum3")) 
 
 DefaultAssay(epiremovedgland) <- 'RNA'
 markers <- FindAllMarkers(epiremovedgland, only.pos = TRUE, min.pct = 0.25, logfc.threshold = 0.25)
@@ -158,7 +158,7 @@ ComplexHeatmap::pheatmap(cts,show_colnames =T,show_rownames = F,breaks = bk,lege
 
 
 ######## Supplementary Figure 3 Partial Epi and Epithelium DEG heatmap -------------------
-subset <- sample.integrated[, sample.integrated$cell.type %in% c('Partial Epi','Epithelium')]
+subset <- subset(sample.integrated, cell.type %in% c('Partial Epi', 'Epithelium'))
 subset$cell.type <- ordered(subset$cell.type,levels=c('Partial Epi','Epithelium'))
 
 DefaultAssay(subset) <- 'RNA'
@@ -187,7 +187,7 @@ DotPlot(subset,group.by = 'cell.type',features = rev(gene),cols = c('lightgray',
 
 
 ######## Mesenchymal subtypes ------------------------------- 
-mesen <- sample.integrated[, sample.integrated$cell.type %in% "Mesenchymal"] 
+mesen <- subset(sample.integrated, cell.type == "Mesenchymal")
 DefaultAssay(mesen) <- 'integrated'
 mesen <- RunPCA(mesen) 
 mesen <- RunUMAP(mesen, reduction = "pca", dims = 1:20)
@@ -223,7 +223,7 @@ ComplexHeatmap::pheatmap(cts,show_colnames =T,show_rownames = F,breaks = bk,lege
 save(mesen,file = 'mesen.rdata')
 
 ######## Neuronal subtypes ------------------------------- 
-neuron <- sample.integrated[,sample.integrated$Major_cell_type %in% 'Neuronal'] 
+neuron <- subset(sample.integrated, Major_cell_type == 'Neuronal') 
 
 DefaultAssay(neuron) <- 'integrated'
 neuron <- RunPCA(neuron) 

@@ -13,7 +13,7 @@ load(file = './integrated.RData')
 col=pal_igv('default',alpha = 1)(51)
 
 # mesenchymal lineage
-sce <- sample.integrated[, sample.integrated$cell_type %in% c('hPSC','Mesenchymal1','Mesenchymal2','Mesenchymal3')]
+sce <- subset(sample.integrated, cell_type %in% c('hPSC', 'Mesenchymal1', 'Mesenchymal2', 'Mesenchymal3'))
 DefaultAssay(sce) <- 'integrated'
 sce <- FindVariableFeatures(sce)
 sce <- ScaleData(sce, vars.to.regress = "percent.mt")
@@ -47,7 +47,7 @@ pheatmap(cts_mesen,show_colnames =T,show_rownames = T,color = viridis(8),
          name= 'Scaled Expression')
 
 # Extended Data Figure8 Absolute time and relative time
-data <- sce[,sce$day %in% c('D4','D7','D10','D13','D16')]@meta.data[,c('cell.type','day','cyto_pseudotime')]
+data <- subset(sce, day %in% c('D4', 'D7', 'D10', 'D13', 'D16'))@meta.data[,c('cell.type','day','cyto_pseudotime')]
 
 ggplot(data,aes(x=cell.type,y=cyto_pseudotime))+
   geom_violin(width =0.8,fill='grey90',color='grey90')+
@@ -74,7 +74,7 @@ ggplot(data,aes(x=cell.type,y=cyto_pseudotime))+
 saveRDS(sce,file = 'mesen.rds')
 
 # neural lineage
-sce <- sample.integrated[, sample.integrated$cell_type %in% c('hPSC','Early NPC','Premigratory ENC','NPC','Migratory ENCC','Neuron')]
+sce <- subset(sample.integrated, cell_type %in% c('hPSC', 'Early NPC', 'Premigratory ENC', 'NPC', 'Migratory ENCC', 'Neuron'))
 DefaultAssay(sce) <- 'integrated'
 sce <- FindVariableFeatures(sce)
 sce <- ScaleData(sce, vars.to.regress = "percent.mt")
@@ -109,7 +109,7 @@ pheatmap(cts_neuron,show_colnames =T,show_rownames = T,color = viridis(8),
 
 # Extended Data Figure8 Absolute time and relative time
 sample <- subset(sce,downsample=2000)
-data <- sample[,sample$day %in% c('D4','D7','D10','D13','D16')]@meta.data[,c('cell.type','day','cyto_pseudotime')]
+data <- subset(sample, day %in% c('D4', 'D7', 'D10', 'D13', 'D16'))@meta.data[,c('cell.type','day','cyto_pseudotime')]
 
 ggplot(data,aes(x=cell.type,y=cyto_pseudotime))+
   geom_violin(width =0.8,fill='grey90',color='grey90')+
@@ -136,7 +136,7 @@ ggplot(data,aes(x=cell.type,y=cyto_pseudotime))+
 saveRDS(sce,file = 'neuron.rds')
 
 # epithelial lineage
-sce <- sample.integrated[, sample.integrated$cell.type %in% c('hPSC','DE','Partial Epi','Epithelium','Enteroendocrine')]
+sce <- subset(sample.integrated, cell.type %in% c('hPSC', 'DE', 'Partial Epi', 'Epithelium', 'Enteroendocrine'))
 DefaultAssay(sce) <- 'integrated'
 sce <- FindVariableFeatures(sce)
 sce <- ScaleData(sce, vars.to.regress = "percent.mt")
@@ -172,7 +172,7 @@ pheatmap(cts_epi,show_colnames =T,show_rownames = T,color = viridis(8),
 
 # Extended Data Figure8 Absolute time and relative time
 sample <- subset(sce,downsample=2000)
-data <- sample[,sample$day %in% c('D4','D7','D10','D13','D16')]@meta.data[,c('cell.type','day','cyto_pseudotime')]
+data <- subset(sample, day %in% c('D4', 'D7', 'D10', 'D13', 'D16'))@meta.data[,c('cell.type','day','cyto_pseudotime')]
 
 ggplot(data,aes(x=cell.type,y=cyto_pseudotime))+
   geom_violin(width =0.8,fill='grey90',color='grey90')+
@@ -254,8 +254,8 @@ markers <- filter(markers,p_val_adj < 0.05)
 de <- pseudotime_de[unique(markers$gene), ]
 de <- subset(de, qval < 0.05)
 
-fundus <- subset(seu, subset = celltype %in%  c("Precursor","Fundus1",'Fundus2') )
-antrum <- subset(seu, subset = celltype %in%  c("Precursor","Antrum1",'Antrum2','Antrum3'))
+fundus <- subset(seu, celltype %in%  c("Precursor","Fundus1",'Fundus2') )
+antrum <- subset(seu, celltype %in%  c("Precursor","Antrum1",'Antrum2','Antrum3'))
 
 fundus@meta.data <- fundus@meta.data %>% arrange(-dpt_pseudotime)
 antrum@meta.data <- antrum@meta.data %>% arrange(dpt_pseudotime)
@@ -331,7 +331,7 @@ dotplot(bp) + theme(axis.text.x = element_text(
 ))
 
 # Extended Data Figure9 Absolute time and relative time
-seu <- seu[,seu$day %in% c('D7','D10','D13','D16')]
+seu <- subset(seu, day %in% c('D7', 'D10', 'D13', 'D16'))
 seu$day <- ordered(seu$day,levels =c('D16', 'D13', 'D10', 'D7'))
 Idents(seu) <- seu$celltype
 sample <- subset(seu,downsample=500)
@@ -367,7 +367,7 @@ ggplot(data,aes(x=celltype1,y=dpt_pseudotime))+
 
 
 ######## Figure 4 URD on day 16 epithelial cells ------------------------------
-d16 <- epiremovegland[, epiremovegland$day %in% "D16" ] 
+d16 <- subset(epiremovegland, day == "D16")
 d16$cell.type <- ordered(d16$cell.type,levels = c("Fundus1","Fundus2","Antrum1","Antrum2","Antrum3"))
 
 de.gland <- d16
@@ -452,8 +452,8 @@ Heatmap(
 
 # Extended Data Figure9 TF heatmap
 load(file = 'epi.RData')
-d16 <- counts[, counts$day %in% 'D16'] 
-d16 <- d16[, d16$lab %in% c('Antral Epi','Fundic Epi')] 
+d16 <- subset(counts, day == 'D16')
+d16 <- subset(d16, lab %in% c('Antral Epi', 'Fundic Epi'))
 d16$lab <- ordered(d16$lab,levels = c('Antral Epi','Fundic Epi')) 
 
 loom <- open_loom('out_SCENIC.loom')

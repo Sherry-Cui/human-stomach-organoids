@@ -8,8 +8,8 @@ library(stringr)
 library(ggsci)
 
 load(file = 'integrated.RData')
-sce <- sample.integrated[, sample.integrated$day %in% 'D10'] 
-sce <- sce[, sce$cellchatuse %in% c('Precursor',"Fundic Epi",'Antral Epi',"Mesenchymal","NE","NPC","Neuron", "ENCC")]
+sce <- subset(sample.integrated, day == 'D10')
+sce <- subset(sce, cellchatuse %in% c('Precursor', 'Fundic Epi', 'Antral Epi', 'Mesenchymal', 'NE', 'NPC', 'Neuron', 'ENCC'))
 data.input  <- sce@assays$RNA@data
 identity = data.frame(group =sce$cell.type , row.names = names(sce$cell.type)) 
 unique(identity$group) 

@@ -30,7 +30,7 @@ all@reductions$umap@cell.embeddings <- cell.embeddings
 col <- levels(as.factor(all$cluster_col))
 DimPlot(all, reduction = "umap", group.by = "Corrected_tissue",raster=FALSE,split.by = 'Corrected_tissue',ncol = 4,label = F,cols = col) 
 
-stomach <- all[, all$Corrected_organ_group %in% 'Stomach']
+stomach <- subset(all, Corrected_organ_group == 'Stomach')
 p1 <- DimPlot(stomach, reduction = "umap", group.by = "Age_week",raster=FALSE,label = F,cols = col[15:27])
 p2 <- DimPlot(stomach, reduction = "umap", group.by = "Major_cell_type",raster=FALSE,label = TRUE,cols = col) 
 p3 <- DimPlot(stomach, reduction = "umap", group.by = "Cell_type",raster=FALSE,label = F,cols = col)
@@ -39,14 +39,14 @@ p1|p2|p3
 # Figure3 Dotplot
 load(file = 'integrated.RData')
 
-d16 <- sample.integrated[, sample.integrated$day %in% 'D16'] 
+d16 <- subset(sample.integrated, day == 'D16') 
 d16$Corrected_organ_group <- d16$day
-all.sample <- all[, all$Corrected_tissue %in% c('Esophagus','Duodenum','Stomach','Stomach-antrum','Stomach-corpus')] 
+all.sample <- subset(all, Corrected_tissue %in% c('Esophagus', 'Duodenum', 'Stomach', 'Stomach-antrum', 'Stomach-corpus'))
 all.sample_d16 <- merge(all.sample,d16)
 all.sample_d16 <- NormalizeData(all.sample_d16)
 all.sample_d16 <- ScaleData(all.sample_d16, features = rownames(all.sample_d16))
 
-all.sample_d16_epi <- all.sample_d16[, all.sample_d16$Major_cell_type %in% c('Epi','Epithelial')] 
+all.sample_d16_epi <- subset(all.sample_d16, Major_cell_type %in% c('Epi', 'Epithelial')) 
 all.sample_d16_epi$Corrected_organ_group <- ordered(all.sample_d16_epi$Corrected_organ_group,levels=c('Intestine','Esophagus','Stomach','d16'))
 DefaultAssay(all.sample_d16_epi) <- 'RNA'
 gene <- c('CLDN18','SOX2','CDH1', # Stomach epithelium
@@ -59,7 +59,7 @@ set.seed(20230518)
 
 sample.integrated$Major_cell_type <- result$celltype
 Idents(sample.integrated) <- 'Major_cell_type'
-sample<-subset(sample.integrated,downsample=2000)#23068
+sample <- subset(sample.integrated,downsample=2000)#23068
 vivo$celltype <- paste0('lite_ ',vivo$Major_cell_type)
 
 vivo$sample <- vivo$orig.ident
@@ -235,7 +235,7 @@ epi$subtype <- plyr::mapvalues(x=epi$subtype,from=c('Proliferative gastric epith
                                                     'Corpus mucous neck cell','Antral gland cell','Antral surface mucous cell','Corpus surface mucous cell'),
                                to=c('Fetal_stomach_precursor','Fetal_stomach_antrum','Fetal_stomach_antrum','Fetal_stomach_fundus','Fetal_stomach_fundus',
                                     'Fetal_stomach_gland','Fetal_stomach_gland','Fetal_stomach_gland'))
-epi.subset <- epi[, epi$subtype %in% c('Fetal_stomach_precursor','Fetal_stomach_antrum','Fetal_stomach_fundus','Fetal_stomach_gland')] #784
+epi.subset <- subset(epi, subtype %in% c('Fetal_stomach_precursor', 'Fetal_stomach_antrum', 'Fetal_stomach_fundus', 'Fetal_stomach_gland'))
 epi.subset$split <- 'In vivo' 
 
 # Figure4 Dotplot
@@ -441,7 +441,7 @@ col <- levels(as.factor(sce$color))
 DimPlot(sce, reduction = "umap", group.by = "cell_type",raster=FALSE,label = T,cols = col) 
 
 load(file = 'integrated.RData')
-d7 <- sample.integrated[, sample.integrated$day %in% 'D7'] 
+d7 <- subset(sample.integrated, day == 'D7') 
 d7_negative <- subset(x = d7, subset = FOXA2 == 0) 
 d7_negative <- subset(x = d7_negative, subset = CDH1 == 0) 
 sox2_gata4 <- subset(x = d7_negative, subset = GATA4 > 0|SOX2>0) 
