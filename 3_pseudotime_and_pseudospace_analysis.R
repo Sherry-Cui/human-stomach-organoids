@@ -27,7 +27,7 @@ pheno <- sce$lab
 pheno <- as.character(pheno)
 names(pheno) <- rownames(sce@meta.data)
 VEC=sce@reductions$umap@cell.embeddings
-# Extended Data Figure8
+# Extended Figure8
 plotCytoTRACE(results, phenotype = pheno,emb = VEC)
 
 # Supplementary Figure 4 Ecm gene heatmap
@@ -46,7 +46,7 @@ pheatmap(cts_mesen,show_colnames =T,show_rownames = T,color = viridis(8),
          cluster_cols = F,
          name= 'Scaled Expression')
 
-# Extended Data Figure8 Absolute time and relative time
+# Extended Figure8 Absolute time and relative time
 data <- subset(sce, day %in% c('D4', 'D7', 'D10', 'D13', 'D16'))@meta.data[,c('cell.type','day','cyto_pseudotime')]
 
 ggplot(data,aes(x=cell.type,y=cyto_pseudotime))+
@@ -88,7 +88,7 @@ pheno <- sce$lab
 pheno <- as.character(pheno)
 names(pheno) <- rownames(sce@meta.data)
 VEC=sce@reductions$umap@cell.embeddings
-# Extended Data Figure8
+# Extended Figure8
 plotCytoTRACE(results, phenotype = pheno,emb = VEC)
 
 # Supplementary Figure 4 Ecm gene heatmap
@@ -107,7 +107,7 @@ pheatmap(cts_neuron,show_colnames =T,show_rownames = T,color = viridis(8),
          cluster_cols = F,
          name= 'Scaled Expression')
 
-# Extended Data Figure8 Absolute time and relative time
+# Extended Figure8 Absolute time and relative time
 sample <- subset(sce,downsample=2000)
 data <- subset(sample, day %in% c('D4', 'D7', 'D10', 'D13', 'D16'))@meta.data[,c('cell.type','day','cyto_pseudotime')]
 
@@ -150,7 +150,7 @@ pheno <- sce$lab
 pheno <- as.character(pheno)
 names(pheno) <- rownames(sce@meta.data)
 VEC=sce@reductions$umap@cell.embeddings
-# Extended Data Figure8
+# Extended Figure8
 plotCytoTRACE(results, phenotype = pheno,emb = VEC)
 
 
@@ -170,7 +170,7 @@ pheatmap(cts_epi,show_colnames =T,show_rownames = T,color = viridis(8),
          cluster_cols = F,
          name= 'Scaled Expression')
 
-# Extended Data Figure8 Absolute time and relative time
+# Extended Figure8 Absolute time and relative time
 sample <- subset(sce,downsample=2000)
 data <- subset(sample, day %in% c('D4', 'D7', 'D10', 'D13', 'D16'))@meta.data[,c('cell.type','day','cyto_pseudotime')]
 
@@ -199,7 +199,7 @@ ggplot(data,aes(x=cell.type,y=cyto_pseudotime))+
 saveRDS(sce,file = 'epi.rds')
 
 
-# Extended Data Figure7
+# Extended Figure7
 load("NEURON.RData")
 
 expr <- data.frame(neuron@assays$RNA$counts)
@@ -219,11 +219,9 @@ library(monocle)
 library(URD)
 library(clusterProfiler)
 library(org.Hs.eg.db)
-
-#  Figure4 Epithelium DPT
-library(reticulate)
 library(viridisLite)
 
+# Extended Figure9 Epithelium DPT
 load(file = 'seu.rdata')
 col <- c('#e7c23e',"#A6CEE3","#1F78B4","#FB9A99","#E95C59","#6A3D9A","#33A02C" )
 DimPlot(seu, reduction = "diffmap", group.by = "celltype", cols = col) 
@@ -330,7 +328,7 @@ dotplot(bp) + theme(axis.text.x = element_text(
   vjust = 0.5, hjust = 0.5
 ))
 
-# Extended Data Figure9 Absolute time and relative time
+# Supplementary Figure 5 Absolute time and relative time
 seu <- subset(seu, day %in% c('D7', 'D10', 'D13', 'D16'))
 seu$day <- ordered(seu$day,levels =c('D16', 'D13', 'D10', 'D7'))
 Idents(seu) <- seu$celltype
@@ -366,7 +364,7 @@ ggplot(data,aes(x=celltype1,y=dpt_pseudotime))+
   xlab('Cell type')+RotatedAxis()
 
 
-######## Figure 4 URD on day 16 epithelial cells ------------------------------
+######## Extended Figure9 URD on day 16 epithelial cells ------------------------------
 d16 <- subset(epiremovegland, day == "D16")
 d16$cell.type <- ordered(d16$cell.type,levels = c("Fundus1","Fundus2","Antrum1","Antrum2","Antrum3"))
 
@@ -420,7 +418,7 @@ mat <- t(apply(mat,1,function(x){(x-mean(x))/sd(x)}))
 meta <- d16@meta.data[,c("cell.type",'day')]
 meta$cell.type <- factor(meta$cell.type,levels = c("Fundus1","Fundus2",'Antrum1','Antrum2','Antrum3'))
 
-# Extended Data Figure9 HOX gene heatmap
+# Extended Figure9 HOX gene heatmap
 gene <- rownames(cds_sub)[grep("^HOX", rownames(cds_sub))] 
 pseudotime_de <- differentialGeneTest(cds_sub[gene,], fullModelFormulaStr = "~sm.ns(Pseudotime)") 
 pseudotime_de <- subset(pseudotime_de, qval < 0.05) 
@@ -429,7 +427,7 @@ gene <- pseudotime_de$gene_short_name
 plot_pseudotime_heatmap(cds_sub[gene,],return_heatmap=T, 
                         hmcols = colorRampPalette(rev(brewer.pal(n = 7, name ="RdYlBu")))(100),show_rownames = T,cluster_rows = F)
 
-# Extended Data Figure9 ECM gene heatmap
+# Extended Figure9 ECM gene heatmap
 highlight <- read_excel('ECM_gene.xlsx') 
 highlight <- as.data.frame(highlight)
 highlight <- highlight[order(-highlight[,'epi.cytotrce.cor']),]
@@ -450,7 +448,7 @@ Heatmap(
   cluster_columns              = FALSE,
   top_annotation = col_anno) 
 
-# Extended Data Figure9 TF heatmap
+# Extended Figure9 TF heatmap
 load(file = 'epi.RData')
 d16 <- subset(counts, day == 'D16')
 d16 <- subset(d16, lab %in% c('Antral Epi', 'Fundic Epi'))

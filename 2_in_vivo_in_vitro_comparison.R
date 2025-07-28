@@ -36,7 +36,7 @@ p2 <- DimPlot(stomach, reduction = "umap", group.by = "Major_cell_type",raster=F
 p3 <- DimPlot(stomach, reduction = "umap", group.by = "Cell_type",raster=FALSE,label = F,cols = col)
 p1|p2|p3
 
-# Figure3 Dotplot
+# Extended Figure 6
 load(file = 'integrated.RData')
 
 d16 <- subset(sample.integrated, day == 'D16') 
@@ -102,7 +102,6 @@ all_sample.combined$Major_cell_type<- factor(all_sample.combined$Major_cell_type
                                                                                             "Fetal_stomach_Endothelial",'Fetal_stomach_Erythroid',"Fetal_stomach_Immune"))
 all_sample.combined$day<- factor(all_sample.combined$day,levels = c("D4","D7","D10","D13","D16","Vivo"))
 
-# Extended Data Figure 6 
 DimPlot(all_sample.combined, group.by = "Major_cell_type",split.by = 'day',label = F,repel = T,raster=FALSE,cols = cols)+
   facet_wrap(~ day, nrow = 2)
 
@@ -145,7 +144,6 @@ manual_order = c("Fetal.stomach.Mesenchymal",'Mesenchymal','Fetal.stomach.Epithe
 dend = reorder(as.dendrogram(hclust_1), wts=order(match(manual_order, rownames(exprTable_t))), agglo.FUN = max)
 col_cluster <- as.hclust(dend)
 bk <- c(seq(0,0.2,by=0.05),seq(0.21,0.3,by=0.03),seq(0.31,0.4,by=0.03),seq(0.41,0.64,by=0.23),seq(0.64,0.82,by=0.18),seq(0.82,0.98,by=0.16),seq(0.98,1,by=0.02))###0.02(有颜色)或者0.03(白)
-# Figure3
 pheatmap(exp,cluster_cols = col_cluster,cluster_rows = col_cluster,display_numbers = F,fontsize = 20,angle_col = '315') 
 
 # Figure3 D16+vivo integrated 
@@ -190,7 +188,7 @@ all_sample.combined$Major_cell_type<- factor(all_sample.combined$Major_cell_type
 
 DimPlot(all_sample.combined, reduction = "umap", group.by = 'Major_cell_type',split.by = 'sample',label = T,repel = T,raster=FALSE,pt.size = 1.5,cols = cols)
 
-# Extended Data Figure 6 
+# Extended Figure 6 
 DefaultAssay(all_sample.combined) <- 'RNA'
 vivo <- subset(all_sample.combined,Sample=='vivo')
 vitro <-  subset(all_sample.combined,Sample=='vitro')
@@ -238,7 +236,7 @@ epi$subtype <- plyr::mapvalues(x=epi$subtype,from=c('Proliferative gastric epith
 epi.subset <- subset(epi, subtype %in% c('Fetal_stomach_precursor', 'Fetal_stomach_antrum', 'Fetal_stomach_fundus', 'Fetal_stomach_gland'))
 epi.subset$split <- 'In vivo' 
 
-# Figure4 Dotplot
+# Figure3 Dotplot
 load(file = 'allepi.reintegrate.rdata')
 
 gene <- c('EZH2','FOXO3','TCF4', # Precursor
@@ -254,7 +252,7 @@ p2 <- DotPlot(epi.subset,features = gene,group.by = 'subtype')+RotatedAxis()+coo
   scale_color_gradientn(colors = c("grey85", brewer.pal(9, "OrRd")))
 p1|p2
 
-# Extended Data Figure 9 FeaturePlot
+# Extended Figure9 FeaturePlot
 d16 <- subset(counts,day=='D16')
 # In vivo
 FeaturePlot(epi.subset,features = 'PDX1',slot = 'scale.data',pt.size = 0.2,order = T)+
@@ -289,7 +287,7 @@ FeaturePlot(d16,features = 'NR2F2',slot = 'scale.data',pt.size = 0.2)+
   scale_colour_gradientn(colours = colorRampPalette(c("#DCDCDC","#DCDCDC",'#FDF5E6','#FFA07A',"#fc2c14",'#CD0000','#CD0000'))(30),labels = c("low", "high"),
                          breaks=c(-0.73,4.3))
 
-# Figure4 integrate
+# Figure3 integrate
 epi.subset$orig.ident <- 'lite'
 counts$subtype <- counts$lab
 all.data <- merge(counts,lite_data)
@@ -330,7 +328,7 @@ vivo <- subset(all_sample.combined,split=='In vivo')
 p2 <- DimPlot(vivo,group.by = 'celltype',cols = c('#E95C59', '#E4C755', '#58A4C3', '#23452F'),pt.size = 2.5)+ scale_x_reverse()
 p1+p2
 
-# Supplementary Figure 5 spearman correlation
+# Supplementary Figure 6 spearman correlation
 Idents(all_sample.combined) <- 'celltype'
 exp<- AverageExpression(all_sample.combined)
 data <- data.frame(exp$integrated)
@@ -413,7 +411,7 @@ p1|p2
 
 
 
-###### Extended Data Figure7 ICC in multi-lineage PFG 
+###### Extended Figure7 ICC in multi-lineage PFG 
 # Article:Primate gastrulation and early organogenesis at single-cell resolution
 meta <- read.csv(file = './MFE56636-meta.csv')
 rawdata <- Read10X('./filtered_feature_bc_matrix')
@@ -545,7 +543,7 @@ p2 <- DimPlot(ref_obj, group.by = 'celltype', shuffle = TRUE,label=F,cols = c("#
 
 
 
-###### Extended Data Figure 7 NE in gastroids and the neuroepithelium in week 3 human embryos
+###### Extended Figure 7 NE in gastroids and the neuroepithelium in week 3 human embryos
 # Article:The single-cell and spatial transcriptional landscape of human gastrulation and brain
 data <- Read10X(data.dir = "GSM4695826_PCW3-01/")
 data <- CreateSeuratObject(counts = data, project = "PC3", min.cells = 3, min.features = 200)

@@ -55,15 +55,13 @@ sample.integrated <- FindClusters(sample.integrated, resolution = seq(0.1,1,0.1)
 
 save(sample.integrated,file = "./integrated.RData")
 
-######## Extended Data Figure 6 UMAP 
+######## Extended Figure 6 
 col=pal_igv('default',alpha = 1)(51)
 p1 <- DimPlot(sample.integrated, reduction = "umap", group.by = "day",label = F,raster=FALSE,cols = col[35:51])
 p2 <- DimPlot(sample.integrated, reduction = "umap", group.by = "cell.type",label = F,raster=FALSE,cols = col)
 
-######## Figure3 UMAP by days
 DimPlot(sample.integrated, reduction = "umap", group.by = "cell.type",split.by = 'day',label = F,raster=FALSE,cols = col)
 
-######## Extended Data Figure 6  cell ratio image
 Cellratio <- prop.table(table(sample.integrated$cell.type, sample.integrated$day), margin = 2)
 Cellratio <- as.data.frame(Cellratio)
 Cellratio$cell_type <- Cellratio$Var1
@@ -75,7 +73,7 @@ ggplot(Cellratio) +
   scale_fill_manual(values = col)+
   theme(panel.border = element_rect(fill=NA,color="black", size=0.5, linetype="solid"))
 
-######## Figure3 marker genes dotplot
+# marker genes dotplot
 DefaultAssay(sample.integrated) <- "RNA"
 gene <- c('POU5F1','NANOG', #hPSC
           'SOX17','GSC',#DE
@@ -90,7 +88,6 @@ gene <- c('POU5F1','NANOG', #hPSC
           'SST','GHRL')#Enteroendocrine
 DotPlot(sample.integrated, features =gene, group.by = "cell.type",cols = c("lightgrey",'#FF0000'))+ RotatedAxis() 
 
-######## Extended Data Figure 6  featureplot
 FeaturePlot(sample.integrated,features = c('EPCAM','PAX6','COL3A1'),cols = c('lightgrey','red'),ncol = 3,label = F)
 
 ######## epithelial subtypes ------------------------------- 
@@ -125,14 +122,14 @@ counts$cell.type <- plyr::mapvalues(x=counts$cell.type,from=c('0','1','2','3','4
 counts$cell.type <- ordered(counts$cell.type,levels=c('Precursor','Fundus1','Fundus2','Antrum1','Antrum2','Antrum3','Gland'))
 
 
-# Extended Data Figure 9
+# Supplementary Figure 5
 col <- c('#e7c23e',"#A6CEE3","#1F78B4","#FB9A99","#E95C59","#6A3D9A","#33A02C" )
 DimPlot(counts,group.by = 'cell.type',cols =col)
 
-# Extended Data Figure9 featureplot 
+# Extended Figure9 featureplot 
 FeaturePlot(counts,features = c('PDX1','SOX2'),cols = c('lightgrey','red'),split.by = 'day',label = F)
 
-# Extended Data Figure9 DEG heatmap
+# Supplementary Figure 5 DEG heatmap
 epiremovedgland <- subset(counts, cell.type %in% c("Fundus1", "Fundus2", "Antrum1", "Antrum2", "Antrum3")) 
 
 DefaultAssay(epiremovedgland) <- 'RNA'
@@ -182,7 +179,6 @@ ComplexHeatmap::pheatmap(cts,show_colnames =T,show_rownames = F,breaks = bk,lege
                          name= 'Scaled Expression')
 
 gene <- c('POU5F1','SOX17','CXCR4','SFRP1','CDH1','FOS','CDH6')
-# Supplementary Figure 3
 DotPlot(subset,group.by = 'cell.type',features = rev(gene),cols = c('lightgray','red'))+RotatedAxis()+coord_flip()
 
 
@@ -247,7 +243,7 @@ num2 <- match(colnames(Neu2),colnames(neuron))
 neuron$cell.type[num2] <- 'Neuron2'
 DimPlot(neuron,group.by = 'cell.type',label = F,cols = c("#A6CEE3","#1F78B4","#e7c23e","#802268FF", "#6BD76BFF","#FF4500"))
 
-# Extended Data Figure 7 heatmap 
+# Extended Figure 7 heatmap 
 mt.lab <- as.data.frame(t(as.matrix(GetAssayData(neuron, assay = "RNA", slot = "scale.data"))))
 group.by <- 'cell.type'
 mt.lab <- aggregate(mt.lab, by=list(neuron@meta.data[[group.by]]), FUN="mean")
