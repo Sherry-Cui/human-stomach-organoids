@@ -251,7 +251,7 @@ rownames(mt.lab) <- mt.lab$Group.1
 mt.lab <- t(mt.lab[,-1])
 
 cts <- as.matrix(mt.lab[rev(c('GBX2','SOX3','NKX6-1','HOXA4','HOXA5','ERBB3','SOX10','TBX3')),])
-bk <- c(seq(-1,1,by=0.1),seq(1,2,by=0.1))
+bk <- c(seq(-1,1,by=0.1),2)
 pheatmap(cts, cluster_cols = F,cluster_rows = F,breaks = bk,legend_breaks=seq(-1,2,1),
          color = colorRampPalette(rev(brewer.pal(n = 11, name ="RdYlBu")))(length(bk))
 )
