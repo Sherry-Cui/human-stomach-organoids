@@ -394,7 +394,7 @@ flood.result <- floodPseudotime(object, root.cells=root.cells, n=10, minimum.cel
 object <- floodPseudotimeProcess(object, flood.result, floods.name="pseudotime", max.frac.NA=0.4, pseudotime.fun=mean, stability.div=20)
 gg.data <- cbind(object@pseudotime, object@meta[rownames(object@pseudotime),])
 
-col <- c("#A6CEE3","#1F78B4","#FB9A99","#E95C59","#6A3D9A","#33A02C" )
+col <- c("#A6CEE3","#1F78B4","#FB9A99","#E95C59","#6A3D9A")
 ggplot(gg.data, aes(x=pseudotime, color=cell.type, fill=cell.type))+ geom_density(alpha=0.5)+ 
   theme_bw()+scale_fill_manual(values=col)+ scale_color_manual(values=col)
 

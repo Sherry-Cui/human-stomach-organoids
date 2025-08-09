@@ -394,7 +394,7 @@ mg <- ScaleData(mg,features = rownames(mg))
 epi.lineage <- readRDS(file = 'epi.rds') # in vitro
 DefaultAssay(epi.lineage) <- 'RNA'
 
-# Extended Data Figure8
+# Extended Figure8
 secreted.gene <- c('BMP2','FGF2','FGF14','IGF2')
 p1 <- DotPlot(epi.lineage,features = rev(secreted.gene),
               group.by = 'cell.type',cols = c('lightgray','red'))+RotatedAxis()+coord_flip()
